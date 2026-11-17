@@ -67,7 +67,7 @@ export const CapstoneArena: React.FC = () => {
       <div className="section-header-bar">
         <div>
           <span className="eyebrow-tag">END-TO-END ENTERPRISE CAPSTONE &amp; GATEKEEPER</span>
-          <h2>Project Titan: Global SAP + M365 + Agentic AI Supply Chain Transformation</h2>
+          <h2>Project Horizon: Global SAP + M365 + Agentic AI Supply Chain Transformation</h2>
           <p className="subtitle-copy">
             Navigate a 5-stage enterprise transformation spanning all 5 pillars. Every architectural decision impacts your 36-month TCO, P95 latency, Day-2 resilience, and Executive Board approval.
           </p>

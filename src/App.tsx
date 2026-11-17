@@ -108,7 +108,7 @@ export function App() {
             <Award size={17} />
             <div>
               <strong>3. End-to-End Capstone &amp; 7-Gate Checklist</strong>
-              <span>Project Titan 5-Stage Scenario + SA Gatekeeper</span>
+              <span>Project Horizon 5-Stage Scenario + SA Gatekeeper</span>
             </div>
           </button>
 
