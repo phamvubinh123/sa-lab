@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
-import { PILLARS, TOPICS, type ArchitectureTopic } from '../data/architectureData';
+import { type ArchitectureTopic } from '../data/architectureData';
+import {
+  getLocalizedPillars,
+  getLocalizedTopics,
+  UI_COPY,
+  type Lang
+} from '../data/i18n';
 import {
   AlertOctagon,
   CheckCircle2,
@@ -12,26 +18,31 @@ import {
 } from 'lucide-react';
 
 interface Props {
+  lang: Lang;
   masteredTopicIds: string[];
   onToggleMastered: (topicId: string) => void;
 }
 
-export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onToggleMastered }) => {
+export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds, onToggleMastered }) => {
+  const pillars = getLocalizedPillars(lang);
+  const topics = getLocalizedTopics(lang);
+  const copy = UI_COPY[lang].explorer;
+
   const [selectedPillarId, setSelectedPillarId] = useState<string>('pillar-1');
-  const pillarTopics = TOPICS.filter((t) => t.pillarId === selectedPillarId);
-  const [selectedTopicId, setSelectedTopicId] = useState<string>(pillarTopics[0]?.id || TOPICS[0].id);
+  const pillarTopics = topics.filter((t) => t.pillarId === selectedPillarId);
+  const [selectedTopicId, setSelectedTopicId] = useState<string>(pillarTopics[0]?.id || topics[0].id);
 
   const handleSelectPillar = (pillarId: string) => {
     setSelectedPillarId(pillarId);
-    const firstTopic = TOPICS.find((t) => t.pillarId === pillarId);
+    const firstTopic = topics.find((t) => t.pillarId === pillarId);
     if (firstTopic) {
       setSelectedTopicId(firstTopic.id);
     }
   };
 
-  const currentPillar = PILLARS.find((p) => p.id === selectedPillarId) || PILLARS[0];
+  const currentPillar = pillars.find((p) => p.id === selectedPillarId) || pillars[0];
   const currentTopic: ArchitectureTopic =
-    TOPICS.find((t) => t.id === selectedTopicId) || pillarTopics[0] || TOPICS[0];
+    topics.find((t) => t.id === selectedTopicId) || pillarTopics[0] || topics[0];
 
   const isMastered = masteredTopicIds.includes(currentTopic.id);
 
@@ -39,8 +50,8 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onTog
     <div className="explorer-wrapper">
       {/* 5 Pillars Selector Strip */}
       <div className="pillars-strip">
-        {PILLARS.map((pillar) => {
-          const topicsInPillar = TOPICS.filter((t) => t.pillarId === pillar.id);
+        {pillars.map((pillar) => {
+          const topicsInPillar = topics.filter((t) => t.pillarId === pillar.id);
           const doneCount = topicsInPillar.filter((t) => masteredTopicIds.includes(t.id)).length;
           const isActive = pillar.id === selectedPillarId;
 
@@ -52,9 +63,9 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onTog
               onClick={() => handleSelectPillar(pillar.id)}
             >
               <div className="pillar-card-top">
-                <span className="pillar-num-badge">PILLAR {pillar.number}</span>
+                <span className="pillar-num-badge">{copy.pillarWord} {pillar.number}</span>
                 <span className="pillar-progress-pill">
-                  {doneCount}/{topicsInPillar.length} Mastered
+                  {doneCount}/{topicsInPillar.length} {copy.masteredWord}
                 </span>
               </div>
               <strong className="pillar-card-title">{pillar.title}</strong>
@@ -69,7 +80,7 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onTog
         {/* Left Sidebar: Topics in Selected Pillar */}
         <aside className="topic-sidebar">
           <div className="sidebar-header">
-            <span className="eyebrow-tag">PILLAR {currentPillar.number} MODULES</span>
+            <span className="eyebrow-tag">{copy.pillarWord} {currentPillar.number} {copy.modulesWord}</span>
             <h3>{currentPillar.shortTitle}</h3>
           </div>
 
@@ -95,7 +106,7 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onTog
           </div>
 
           <div className="pillar-focus-summary">
-            <h4>Core Pillar Mandates</h4>
+            <h4>{copy.coreMandates}</h4>
             <ul>
               {currentPillar.coreFocus.map((item, idx) => (
                 <li key={idx}>{item}</li>
@@ -110,7 +121,7 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onTog
             <div className="topic-header-top">
               <div>
                 <span className="eyebrow-tag">
-                  MODULE {currentTopic.code} · {currentPillar.shortTitle.toUpperCase()}
+                  {copy.moduleWord} {currentTopic.code} · {currentPillar.shortTitle.toUpperCase()}
                 </span>
                 <h2>{currentTopic.title}</h2>
                 <p className="subtitle-copy">{currentTopic.subtitle}</p>
@@ -121,20 +132,20 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onTog
                 onClick={() => onToggleMastered(currentTopic.id)}
               >
                 <CheckCircle2 size={16} />
-                {isMastered ? 'Mastered (Completed)' : 'Mark Module Mastered'}
+                {isMastered ? copy.markedMastered : copy.markMastered}
               </button>
             </div>
 
             <div className="golden-rule-callout">
               <Compass size={20} />
               <div>
-                <strong>SA Golden Rule &amp; Decision Threshold:</strong>
+                <strong>{copy.goldenRuleLabel}</strong>
                 <p>{currentTopic.goldenRule}</p>
               </div>
             </div>
 
             <p className="business-context-p">
-              <strong>Enterprise Context:</strong> {currentTopic.businessContext}
+              <strong>{copy.contextLabel}</strong> {currentTopic.businessContext}
             </p>
           </div>
 
@@ -142,7 +153,7 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onTog
           <div className="detail-section-card">
             <div className="card-heading">
               <Terminal size={18} />
-              <h3>Reference Architecture Flow &amp; Control Points</h3>
+              <h3>{copy.flowHeading}</h3>
             </div>
             <pre className="ascii-box">{currentTopic.asciiFlow}</pre>
           </div>
@@ -151,7 +162,7 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onTog
           <div className="detail-section-card">
             <div className="card-heading">
               <Scale size={18} />
-              <h3>Dimension 1: Architectural Trade-Off Matrix &amp; Option Evaluation</h3>
+              <h3>{copy.dim1Heading}</h3>
             </div>
 
             <div className="options-grid-3">
@@ -159,7 +170,7 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onTog
                 <div key={opt.id} className={`arch-option-card ${idx === 0 ? 'recommended' : ''}`}>
                   <div className="option-card-header">
                     <span className="option-rank-badge">
-                      {idx === 0 ? 'SA RECOMMENDED PATTERN' : `ALTERNATIVE ${idx}`}
+                      {idx === 0 ? copy.recommendedBadge : `${copy.alternativeBadge} ${idx}`}
                     </span>
                     <div className="option-meta-tags">
                       <span>Cost: {opt.costProfile}</span>
@@ -170,7 +181,7 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onTog
                   <p className="option-tagline">{opt.tagline}</p>
 
                   <div className="pros-cons-block">
-                    <strong>Strengths:</strong>
+                    <strong>{copy.strengths}</strong>
                     <ul className="pros-list">
                       {opt.pros.map((p, i) => (
                         <li key={i}>{p}</li>
@@ -179,7 +190,7 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onTog
                   </div>
 
                   <div className="pros-cons-block">
-                    <strong>Trade-offs / Risks:</strong>
+                    <strong>{copy.tradeOffsRisks}</strong>
                     <ul className="cons-list">
                       {opt.cons.map((c, i) => (
                         <li key={i}>{c}</li>
@@ -188,7 +199,7 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onTog
                   </div>
 
                   <div className="when-to-use-footer">
-                    <strong>When to Use:</strong> {opt.whenToUse}
+                    <strong>{copy.whenToUse}</strong> {opt.whenToUse}
                   </div>
                 </div>
               ))}
@@ -197,7 +208,7 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onTog
             {/* Quantitative 5-Axis Comparison Bars */}
             <div className="tradeoff-bars-panel">
               <div className="bars-legend">
-                <h4>Quantitative Multi-Axis Trade-Off Comparison (0–100 Score)</h4>
+                <h4>{copy.quantHeading}</h4>
                 <div className="legend-items">
                   <span className="legend-dot opt-a">{currentTopic.optionsComparison.optionALabel}</span>
                   <span className="legend-dot opt-b">{currentTopic.optionsComparison.optionBLabel}</span>
@@ -238,17 +249,17 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onTog
             <div className="detail-section-card">
               <div className="card-heading">
                 <Layers size={18} />
-                <h3>Dimension 2: Design Boundaries &amp; Red Lines</h3>
+                <h3>{copy.dim2Heading}</h3>
               </div>
               <div className="stack-cards">
                 {currentTopic.boundaries.map((b, i) => (
                   <div key={i} className="boundary-item-card">
                     <h4>{b.zone}</h4>
                     <p>
-                      <strong>Core Responsibility:</strong> {b.responsibility}
+                      <strong>{copy.coreResp}</strong> {b.responsibility}
                     </p>
                     <p className="redline-text">
-                      <strong>Boundary Violation (Never Cross):</strong> {b.mustNeverCross}
+                      <strong>{copy.neverCross}</strong> {b.mustNeverCross}
                     </p>
                   </div>
                 ))}
@@ -258,20 +269,20 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onTog
             <div className="detail-section-card">
               <div className="card-heading">
                 <AlertOctagon size={18} />
-                <h3>Fatal Anti-Patterns (&quot;Tử Huyệt Kiến Trúc&quot;)</h3>
+                <h3>{copy.antiPatternsHeading}</h3>
               </div>
               <div className="stack-cards">
                 {currentTopic.antiPatterns.map((ap, i) => (
                   <div key={i} className="antipattern-item-card">
                     <h4>{ap.name}</h4>
                     <p>
-                      <strong>Symptom:</strong> {ap.symptom}
+                      <strong>{copy.symptom}</strong> {ap.symptom}
                     </p>
                     <p className="impact-text">
-                      <strong>Business Impact:</strong> {ap.businessImpact}
+                      <strong>{copy.impact}</strong> {ap.businessImpact}
                     </p>
                     <p className="fix-text">
-                      <strong>SA Remediation:</strong> {ap.remediation}
+                      <strong>{copy.remediation}</strong> {ap.remediation}
                     </p>
                   </div>
                 ))}
@@ -284,19 +295,19 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onTog
             <div className="detail-section-card">
               <div className="card-heading">
                 <Wrench size={18} />
-                <h3>Dimension 3: Day-2 Operational Feasibility</h3>
+                <h3>{copy.dim3Heading}</h3>
               </div>
               {currentTopic.day2Ops.map((op, i) => (
                 <div key={i} className="day2-card">
-                  <h4>Failure Scenario: {op.failureMode}</h4>
+                  <h4>{copy.failureScenario} {op.failureMode}</h4>
                   <p>
-                    <strong>Blast Radius:</strong> {op.blastRadius}
+                    <strong>{copy.blastRadius}</strong> {op.blastRadius}
                   </p>
                   <p>
-                    <strong>Day-2 Mitigation:</strong> {op.mitigationMechanism}
+                    <strong>{copy.day2Mitigation}</strong> {op.mitigationMechanism}
                   </p>
                   <div className="sla-badge-box">
-                    <strong>Key Production SLI/SLO:</strong> {op.keyMetric}
+                    <strong>{copy.keySli}</strong> {op.keyMetric}
                   </div>
                 </div>
               ))}
@@ -305,7 +316,7 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ masteredTopicIds, onTog
             <div className="detail-section-card">
               <div className="card-heading">
                 <Shield size={18} />
-                <h3>Dimension 4: Architecture Governance Mandates</h3>
+                <h3>{copy.dim4Heading}</h3>
               </div>
               <ul className="governance-checklist">
                 {currentTopic.governanceRules.map((rule, i) => (

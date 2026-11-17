@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { UI_COPY, type Lang } from '../data/i18n';
 import {
   type ADREvaluationResult,
   type BoardroomMessage,
@@ -21,6 +22,10 @@ import {
   Sparkles,
   Users
 } from 'lucide-react';
+
+interface Props {
+  lang: Lang;
+}
 
 const ADR_TEMPLATES = [
   {
@@ -53,7 +58,8 @@ const ADR_TEMPLATES = [
   }
 ];
 
-export const AdrAndBoardroomStudio: React.FC = () => {
+export const AdrAndBoardroomStudio: React.FC<Props> = ({ lang }) => {
+  const copy = UI_COPY[lang].studio;
   const [llmConfig, setLlmConfig] = useState<LLMConfig>(() => getSavedLLMConfig());
   const [showKeyModal, setShowKeyModal] = useState<boolean>(false);
   const [keySavedBanner, setKeySavedBanner] = useState<boolean>(false);
@@ -116,14 +122,18 @@ export const AdrAndBoardroomStudio: React.FC = () => {
     setIsEvaluating(true);
     setEvalError(null);
     try {
-      const res = await evaluateADRWithLLM(llmConfig, {
-        title: adrTitle,
-        context: adrContext,
-        consideredOptions: adrOptions,
-        decisionAndBoundaries: adrDecision,
-        tradeOffsAndConsequences: adrTradeOffs,
-        day2OpsAndGovernance: adrDay2Gov
-      });
+      const res = await evaluateADRWithLLM(
+        llmConfig,
+        {
+          title: adrTitle,
+          context: adrContext,
+          consideredOptions: adrOptions,
+          decisionAndBoundaries: adrDecision,
+          tradeOffsAndConsequences: adrTradeOffs,
+          day2OpsAndGovernance: adrDay2Gov
+        },
+        lang
+      );
       setEvalResult(res);
     } catch (err: any) {
       setEvalError(err?.message || 'LLM API call failed. Falling back to built-in heuristic evaluation.');
@@ -136,7 +146,8 @@ export const AdrAndBoardroomStudio: React.FC = () => {
           decisionAndBoundaries: adrDecision,
           tradeOffsAndConsequences: adrTradeOffs,
           day2OpsAndGovernance: adrDay2Gov
-        }
+        },
+        lang
       );
       setEvalResult(fallback);
     } finally {
@@ -163,7 +174,7 @@ export const AdrAndBoardroomStudio: React.FC = () => {
     setIsBoardThinking(true);
 
     try {
-      const result = await runBoardroomChallenge(llmConfig, adrTitle, updatedHistory, replyText);
+      const result = await runBoardroomChallenge(llmConfig, adrTitle, updatedHistory, replyText, lang);
       const newBotMessages: BoardroomMessage[] = result.responses.map((r, i) => ({
         id: `cxo-${Date.now()}-${i}`,
         speaker: r.speaker,
@@ -177,7 +188,7 @@ export const AdrAndBoardroomStudio: React.FC = () => {
       setBoardMessages((prev) => [...prev, ...newBotMessages]);
     } catch (err: any) {
       // Fallback if API key errored
-      const fallback = await runBoardroomChallenge({ ...llmConfig, apiKey: '' }, adrTitle, updatedHistory, replyText);
+      const fallback = await runBoardroomChallenge({ ...llmConfig, apiKey: '' }, adrTitle, updatedHistory, replyText, lang);
       const newBotMessages: BoardroomMessage[] = fallback.responses.map((r, i) => ({
         id: `cxo-fb-${Date.now()}-${i}`,
         speaker: r.speaker,
@@ -219,30 +230,26 @@ export const AdrAndBoardroomStudio: React.FC = () => {
           <KeyRound size={20} className={hasActiveKey ? 'text-success' : 'text-amber'} />
           <div>
             <strong>
-              AI Evaluation &amp; CxO Roleplay Engine:{' '}
+              {copy.engineLabel}{' '}
               {hasActiveKey ? (
                 <span className="status-inline live">
-                  LIVE LLM CONNECTED ({llmConfig.provider.toUpperCase()} · {llmConfig.model})
+                  {copy.liveConnected} ({llmConfig.provider.toUpperCase()} · {llmConfig.model})
                 </span>
               ) : (
-                <span className="status-inline fallback">
-                  BUILT-IN EXPERT ENGINE (Plug in your LLM API Key for Live Generative Critique)
-                </span>
+                <span className="status-inline fallback">{copy.builtInEngine}</span>
               )}
             </strong>
-            <p>
-              Connect your OpenAI, Google Gemini, Anthropic Claude, or OpenAI-compatible API key to unlock live generative ADR grading and multi-turn CxO cross-examination.
-            </p>
+            <p>{copy.bannerDesc}</p>
           </div>
         </div>
         <div className="llm-banner-actions">
-          {keySavedBanner && <span className="saved-pill">API Key Saved in Browser!</span>}
+          {keySavedBanner && <span className="saved-pill">{copy.savedPill}</span>}
           <button
             id="btn-configure-llm-key"
             className="btn-primary"
             onClick={() => setShowKeyModal(!showKeyModal)}
           >
-            <KeyRound size={15} /> {hasActiveKey ? 'Update LLM API Key' : 'Connect LLM API Key'}
+            <KeyRound size={15} /> {hasActiveKey ? copy.updateKey : copy.connectKey}
           </button>
         </div>
       </div>

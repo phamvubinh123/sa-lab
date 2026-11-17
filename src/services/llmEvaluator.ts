@@ -285,13 +285,20 @@ export async function evaluateADRWithLLM(
     decisionAndBoundaries: string;
     tradeOffsAndConsequences: string;
     day2OpsAndGovernance: string;
-  }
+  },
+  lang: 'en' | 'vi' = 'en'
 ): Promise<ADREvaluationResult> {
   if (!config.apiKey.trim()) {
     return evaluateADRHeuristic(adr);
   }
 
+  const langInstruction =
+    lang === 'vi'
+      ? 'Respond in natural Vietnamese with standard English architecture terms (e.g., Circuit Breaker, Bulkhead, CQRS, Model Router, Hybrid RAG, Entra ID OBO).'
+      : 'Respond in crisp executive English.';
+
   const systemPrompt = `You are an elite Enterprise Architecture Review Board (ARB) panel consisting of a Principal Solution Architect, CFO, CISO, Head of SRE, and Chief Data & AI Officer.
+${langInstruction}
 Evaluate the submitted Architecture Decision Record (ADR) strictly against the 5 Enterprise Architecture Pillars:
 1. Distributed Foundations & Resilience (CDN Bypass for dynamic state, Fat Gateway avoidance, Redis Mutex Lock for Cache Stampede, FE-generated UUID + BE Redlock Idempotency, Orchestration Saga >4 steps + Outbox, 3-state Circuit Breaker 1ms Fail-Fast, 80/20 Bulkhead, Strangler Fig).
 2. Enterprise Data (CQRS for >50:1 Read/Write ratio, sanctioned SAP ODP/SLT CDC vs raw BSEG/BKPF triggers, Data Mesh vs Lakehouse, MDM Golden Record, Column Lineage).
@@ -356,13 +363,19 @@ export async function runBoardroomChallenge(
   config: LLMConfig,
   scenarioContext: string,
   history: BoardroomMessage[],
-  architectReply: string
+  architectReply: string,
+  lang: 'en' | 'vi' = 'en'
 ): Promise<{
   responses: { speaker: 'CFO' | 'CISO' | 'SRE' | 'CDAIO'; speakerTitle: string; content: string; scoreImpact: number }[];
   usedLiveLLM: boolean;
 }> {
   if (config.apiKey.trim()) {
+    const langRule =
+      lang === 'vi'
+        ? 'Write all executive responses in natural Vietnamese while keeping standard English architecture terms.'
+        : 'Write all executive responses in English.';
     const systemPrompt = `You are simulating a high-stakes Enterprise Architecture Review Boardroom with 4 executives:
+${langRule}
 - CFO (Chief Financial Officer - obsessed with 3-Year TCO, SLM vs LLM Token FinOps, SAP licensing penalties, and ROI payback).
 - CISO (Chief Information Security Officer - obsessed with Entra ID OBO, M365 SharePoint RBAC/ABAC security trimming, Data Sovereignty, BYOK, and WORM AI Audit Logs).
 - SRE (VP of Infrastructure & SRE - obsessed with Cache Stampede Mutex Locks, FE/BE Idempotency Redlock, Circuit Breakers, 80/20 Bulkheads, and Saga DLQ recovery).

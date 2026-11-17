@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { UI_COPY, type Lang } from '../data/i18n';
 import {
   Activity,
   AlertTriangle,
@@ -11,7 +12,12 @@ import {
   Zap
 } from 'lucide-react';
 
-export const InteractiveSimulators: React.FC = () => {
+interface Props {
+  lang: Lang;
+}
+
+export const InteractiveSimulators: React.FC<Props> = ({ lang }) => {
+  const copy = UI_COPY[lang].sim;
   const [activeLab, setActiveLab] = useState<'chaos-p1' | 'ai-data-zero-trust'>('chaos-p1');
 
   // === LAB 1: PILLAR 1 CHAOS & RESILIENCE SIMULATOR STATE ===
@@ -224,11 +230,9 @@ export const InteractiveSimulators: React.FC = () => {
     <div className="simulator-container">
       <div className="section-header-bar">
         <div>
-          <span className="eyebrow-tag">INTERACTIVE FLIGHT SIMULATORS</span>
-          <h2>Day-2 Operations, Chaos Stress-Testing & AI FinOps Workbench</h2>
-          <p className="subtitle-copy">
-            Manipulate real-world enterprise stress variables (100x Flash Sales, 5-year PDF thread starvation, SAP read skews, Token FinOps & M365 ACL attacks) to observe quantitative architectural trade-offs in real time.
-          </p>
+          <span className="eyebrow-tag">{copy.eyebrow}</span>
+          <h2>{copy.title}</h2>
+          <p className="subtitle-copy">{copy.subtitle}</p>
         </div>
         <div className="sub-tab-switcher">
           <button
@@ -237,7 +241,7 @@ export const InteractiveSimulators: React.FC = () => {
             onClick={() => setActiveLab('chaos-p1')}
           >
             <Zap size={16} />
-            Lab 1: Flash Sale & Resilience Chaos (Pillar 1)
+            {copy.lab1Btn}
           </button>
           <button
             id="sim-tab-aidata"
@@ -245,7 +249,7 @@ export const InteractiveSimulators: React.FC = () => {
             onClick={() => setActiveLab('ai-data-zero-trust')}
           >
             <Cpu size={16} />
-            Lab 2: CQRS, Model Router FinOps & Zero-Trust RAG (Pillars 2–4)
+            {copy.lab2Btn}
           </button>
         </div>
       </div>
@@ -256,14 +260,14 @@ export const InteractiveSimulators: React.FC = () => {
           <div className="sim-panel">
             <div className="panel-title-row">
               <h3>
-                <Sliders size={18} /> 1. Chaos Stress Parameters
+                <Sliders size={18} /> {copy.chaosParams}
               </h3>
-              <span className="badge-neutral">Workload Generator</span>
+              <span className="badge-neutral">{copy.workloadGen}</span>
             </div>
 
             <div className="control-group">
               <div className="control-label-row">
-                <label htmlFor="slider-traffic">Flash Sale Traffic Multiplier</label>
+                <label htmlFor="slider-traffic">{copy.trafficMult}</label>
                 <span className="mono-value">{trafficMultiplier}x Load ({trafficMultiplier * 850} RPS)</span>
               </div>
               <input
@@ -278,7 +282,7 @@ export const InteractiveSimulators: React.FC = () => {
 
             <div className="control-group">
               <div className="control-label-row">
-                <label htmlFor="slider-pdf">Concurrent 5-Year Financial PDF Exports</label>
+                <label htmlFor="slider-pdf">{copy.pdfExports}</label>
                 <span className="mono-value">{pdfAccountants} Accountants</span>
               </div>
               <input
@@ -294,7 +298,7 @@ export const InteractiveSimulators: React.FC = () => {
 
             <div className="control-group">
               <div className="control-label-row">
-                <label htmlFor="slider-partner-latency">Downstream Partner API Latency (Payment/Insurance)</label>
+                <label htmlFor="slider-partner-latency">{copy.partnerLatency}</label>
                 <span className="mono-value">{(partnerApiLatencyMs / 1000).toFixed(1)}s</span>
               </div>
               <input
@@ -310,7 +314,7 @@ export const InteractiveSimulators: React.FC = () => {
 
             <div className="control-group">
               <div className="control-label-row">
-                <label htmlFor="slider-retry">Mobile 3G/4G Network Client Retry Rate</label>
+                <label htmlFor="slider-retry">{copy.mobileRetry}</label>
                 <span className="mono-value">{mobileRetryRate}% Retries</span>
               </div>
               <input
@@ -325,7 +329,7 @@ export const InteractiveSimulators: React.FC = () => {
 
             <div className="control-group">
               <div className="control-label-row">
-                <label htmlFor="slider-steps">Distributed Microservice Workflow Steps</label>
+                <label htmlFor="slider-steps">{copy.workflowSteps}</label>
                 <span className="mono-value">{workflowSteps} Services {workflowSteps > 4 ? '(>4 Threshold!)' : ''}</span>
               </div>
               <input
@@ -342,14 +346,14 @@ export const InteractiveSimulators: React.FC = () => {
 
             <div className="panel-title-row">
               <h3>
-                <ShieldCheck size={18} /> 2. Architectural Safeguards
+                <ShieldCheck size={18} /> {copy.safeguards}
               </h3>
               <div className="quick-btn-row">
                 <button id="btn-enable-all-safeguards" className="btn-secondary-sm" onClick={applyAllResilienceDefenses}>
-                  Enable All SA Patterns
+                  {copy.enableAll}
                 </button>
                 <button id="btn-disable-all-safeguards" className="btn-ghost-sm" onClick={disableAllResilienceDefenses}>
-                  Strip Defenses
+                  {copy.disableAll}
                 </button>
               </div>
             </div>
