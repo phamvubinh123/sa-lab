@@ -1,24 +1,24 @@
 :root {
-  --bg-canvas: hsl(220, 26%, 7%);
-  --bg-surface: hsl(220, 22%, 10%);
-  --bg-elevated: hsl(220, 19%, 13%);
-  --bg-subtle: hsl(220, 18%, 16%);
-  --border-subtle: hsl(218, 17%, 20%);
-  --border-strong: hsl(218, 17%, 28%);
+  --bg-canvas: hsl(210, 25%, 97%);
+  --bg-surface: hsl(0, 0%, 100%);
+  --bg-elevated: hsl(210, 22%, 95%);
+  --bg-subtle: hsl(210, 20%, 91%);
+  --border-subtle: hsl(214, 18%, 85%);
+  --border-strong: hsl(214, 18%, 74%);
 
-  --text-primary: hsl(210, 25%, 96%);
-  --text-secondary: hsl(215, 16%, 72%);
-  --text-muted: hsl(215, 14%, 52%);
+  --text-primary: hsl(220, 28%, 14%);
+  --text-secondary: hsl(218, 16%, 34%);
+  --text-muted: hsl(218, 12%, 48%);
 
-  --accent-teal: hsl(172, 76%, 42%);
-  --accent-teal-soft: hsla(172, 76%, 42%, 0.14);
-  --accent-sky: hsl(199, 88%, 52%);
-  --accent-amber: hsl(38, 92%, 54%);
-  --accent-amber-soft: hsla(38, 92%, 54%, 0.14);
-  --accent-emerald: hsl(156, 72%, 44%);
-  --accent-emerald-soft: hsla(156, 72%, 44%, 0.14);
-  --accent-crimson: hsl(350, 84%, 60%);
-  --accent-crimson-soft: hsla(350, 84%, 60%, 0.14);
+  --accent-teal: hsl(174, 78%, 31%);
+  --accent-teal-soft: hsla(174, 78%, 31%, 0.10);
+  --accent-sky: hsl(201, 86%, 40%);
+  --accent-amber: hsl(35, 92%, 40%);
+  --accent-amber-soft: hsla(35, 92%, 45%, 0.12);
+  --accent-emerald: hsl(156, 72%, 32%);
+  --accent-emerald-soft: hsla(156, 72%, 38%, 0.11);
+  --accent-crimson: hsl(350, 78%, 48%);
+  --accent-crimson-soft: hsla(350, 78%, 50%, 0.10);
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -478,14 +478,14 @@ body {
 }
 
 .ascii-box {
-  background: var(--bg-canvas);
+  background: hsl(214, 24%, 94%);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 1rem;
   font-family: var(--font-mono);
   font-size: 0.78rem;
   line-height: 1.45;
-  color: hsl(185, 75%, 78%);
+  color: hsl(220, 32%, 18%);
   overflow-x: auto;
 }
 
@@ -566,11 +566,11 @@ body {
 }
 
 .pros-list li {
-  color: hsl(156, 55%, 78%);
+  color: hsl(156, 70%, 26%);
 }
 
 .cons-list li {
-  color: hsl(350, 65%, 80%);
+  color: hsl(350, 72%, 38%);
 }
 
 .when-to-use-footer {
@@ -716,11 +716,11 @@ body {
 
 .redline-text,
 .impact-text {
-  color: hsl(350, 80%, 76%);
+  color: hsl(350, 74%, 40%);
 }
 
 .fix-text {
-  color: hsl(156, 70%, 74%);
+  color: hsl(156, 72%, 26%);
 }
 
 .sla-badge-box {
@@ -1002,14 +1002,14 @@ input[type='range'] {
 
 .alert-banner.success {
   background: var(--accent-emerald-soft);
-  border: 1px solid hsla(156, 72%, 44%, 0.4);
-  color: hsl(156, 70%, 86%);
+  border: 1px solid hsla(156, 72%, 35%, 0.35);
+  color: hsl(156, 70%, 22%);
 }
 
 .alert-banner.danger {
   background: var(--accent-crimson-soft);
-  border: 1px solid hsla(350, 84%, 60%, 0.45);
-  color: hsl(350, 85%, 88%);
+  border: 1px solid hsla(350, 78%, 48%, 0.35);
+  color: hsl(350, 72%, 32%);
 }
 
 .alert-banner svg {
@@ -1528,7 +1528,7 @@ input[type='range'] {
 .btn-primary,
 .btn-mastered {
   background: var(--accent-teal);
-  color: hsl(220, 30%, 6%);
+  color: #ffffff;
   font-weight: 600;
   font-size: 0.83rem;
   padding: 0.55rem 1rem;
