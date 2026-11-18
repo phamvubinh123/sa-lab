@@ -20,35 +20,6 @@ import {
 
 export type NodeTone = 'sky' | 'teal' | 'emerald' | 'amber' | 'crimson' | 'slate';
 
-const NODE_VI_TIPS: Array<[RegExp, string]> = [
-  [/CDN Edge/i, 'Lớp CDN biên toàn cầu: chỉ cache tài nguyên tĩnh (HTML/JS/CSS), tuyệt đối không cache tồn kho hoặc giỏ hàng động.'],
-  [/Multi-AZ NLB/i, 'Bộ cân bằng tải L4 đa vùng sẵn sàng (Multi-AZ) giúp phân tán lưu lượng và chịu lỗi hạ tầng.'],
-  [/API Gateway|Gateway \+ Redlock/i, 'Cổng API Gateway tinh gọn: chỉ làm xác thực (AuthN), giới hạn tốc độ (Rate Limit), Idempotency và định tuyến — không chứa business logic.'],
-  [/Redis|Cache/i, 'Bộ nhớ đệm Redis với cơ chế Mutex Single-Flight Lock: chỉ cho phép 1 request đi xuống DB khi cache miss để chống Cache Stampede.'],
-  [/DB|SQL|PostgreSQL|Primary/i, 'Cơ sở dữ liệu giao dịch chính (3NF/ACID) — được bảo vệ khỏi truy vấn nặng và lưu lượng đọc đột biến.'],
-  [/Idempotency|Redlock/i, 'Cơ chế chống trùng lặp giao dịch: Frontend sinh UUID, Backend khóa bằng Redis Redlock để ngăn trừ tiền 2 lần khi mạng chập chờn.'],
-  [/Saga|Outbox/i, 'Orchestration Saga kết hợp Transactional Outbox + CDC: điều phối rollback theo thứ tự LIFO (>4 bước) và đảm bảo không mất sự kiện Dual-Write.'],
-  [/Bulkhead/i, 'Vách ngăn tài nguyên (Bulkhead 80/20): cô lập luồng Checkout (80%) khỏi luồng xuất báo cáo PDF nặng (20%) để không kéo sập bán hàng.'],
-  [/Circuit Breaker/i, 'Cầu dao ngắt mạch: tự động fail-fast (<1ms) khi API đối tác treo >3s, tránh nghẽn toàn bộ thread pool.'],
-  [/Strangler/i, 'Mô hình Strangler Fig: chuyển dần lưu lượng từ hệ thống cũ (Monolith) sang Microservice mới theo tỷ lệ 10% -> 90% -> 100% có thể rollback.'],
-  [/SAP/i, 'Hệ thống lõi SAP S/4HANA: trích xuất dữ liệu qua ODP / SLT CDC hợp chuẩn thay vì gắn trigger trực tiếp lên bảng BSEG/BKPF.'],
-  [/CQRS/i, 'Tách biệt Đọc/Ghi (CQRS): dùng cho hệ thống lệch đọc/ghi >50:1, ghi vào SQL chuẩn hóa và đọc từ Elasticsearch (<0.5s).'],
-  [/Mesh|Lakehouse|MDM/i, 'Kiến trúc dữ liệu doanh nghiệp: Data Mesh phân quyền theo domain, Lakehouse hợp nhất, MDM tạo Golden Record chuẩn hóa.'],
-  [/Router/i, 'AI Model Router: đẩy 70–80% truy vấn đơn giản sang SLM (rẻ hơn 50 lần) và chỉ đẩy 20–30% câu hỏi phức tạp lên Frontier LLM.'],
-  [/Hybrid RAG|RAG|Vector/i, 'Hybrid RAG (BM25 + Vector + Reranker): kết hợp tìm kiếm từ khóa chính xác (mã SKU, mã lỗi) và ngữ nghĩa để chống "mù mã kỹ thuật".'],
-  [/MCP|Agent|Guardrail/i, 'Hệ thống Agentic AI kết nối công cụ chuẩn MCP, được bọc bởi lớp Guardrails kiểm soát PII, Prompt Injection và chi phí.'],
-  [/M365|Entra|RBAC|Security/i, 'Zero-Trust RAG: dùng Entra ID On-Behalf-Of (OBO) và Hybrid Security Trimming để nhân viên chỉ truy xuất tài liệu đúng quyền hạn.'],
-  [/BYOK|WORM|Audit|Sovereignty/i, 'Chủ quyền dữ liệu & Nhật ký kiểm toán bất biến (WORM + BYOK): đảm bảo dữ liệu không rời khỏi vùng quy định và truy vết được mọi câu trả lời AI.'],
-  [/Gatekeeper|ADR|TCO/i, 'Cổng kiểm soát 7 lớp của SA, Docs-as-Code ADR và bài toán TCO/ROI 36 tháng để bảo vệ quyết định trước Hội đồng CxO.']
-];
-
-const getNodeViTip = (title: string, subtitle?: string): string => {
-  for (const [pattern, tip] of NODE_VI_TIPS) {
-    if (pattern.test(title)) return tip;
-  }
-  return subtitle ? `${title}: ${subtitle}` : title;
-};
-
 interface FlowNodeProps {
   icon: React.ReactNode;
   title: string;
@@ -58,11 +29,7 @@ interface FlowNodeProps {
 }
 
 const FlowNode: React.FC<FlowNodeProps> = ({ icon, title, subtitle, badge, tone = 'slate' }) => (
-  <div
-    className={`arch-node tone-${tone}`}
-    data-vi-title={title}
-    data-vi-tip={getNodeViTip(title, subtitle)}
-  >
+  <div className={`arch-node tone-${tone}`}>
     <div className="arch-node-head">
       <span className="arch-node-icon">{icon}</span>
       {badge && <span className="arch-node-badge">{badge}</span>}

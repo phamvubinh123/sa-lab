@@ -22,8 +22,6 @@ interface Props {
 export const CapstoneArena: React.FC<Props> = ({ lang }) => {
   const stages = getLocalizedCapstone(lang);
   const gates = getLocalizedGatekeeper(lang);
-  const viStages = getLocalizedCapstone('vi');
-  const viGates = getLocalizedGatekeeper('vi');
   const copy = UI_COPY[lang].capstone;
 
   const [selectedChoices, setSelectedChoices] = useState<Record<string, string>>({});
@@ -73,7 +71,6 @@ export const CapstoneArena: React.FC<Props> = ({ lang }) => {
   const completedStagesCount = Object.keys(selectedChoices).length;
   const overallMasteryScore = Math.round((totalTradeOff + totalBoundary + totalDay2 + totalGov) / 4);
   const currentStage = stages[activeStageIdx];
-  const currentViStage = viStages[activeStageIdx] || viStages[0];
   const currentPickedChoice = currentStage.choices.find((c) => c.id === selectedChoices[currentStage.id]);
 
   const passedGatesCount = Object.values(checkedGates).filter(Boolean).length;
@@ -81,7 +78,7 @@ export const CapstoneArena: React.FC<Props> = ({ lang }) => {
   return (
     <div className="capstone-wrapper">
       <div className="section-header-bar">
-        <div data-vi-title={UI_COPY.vi.capstone.title} data-vi-tip={UI_COPY.vi.capstone.subtitle}>
+        <div>
           <span className="eyebrow-tag">{copy.eyebrow}</span>
           <h2>{copy.title}</h2>
           <p className="subtitle-copy">{copy.subtitle}</p>
@@ -93,26 +90,26 @@ export const CapstoneArena: React.FC<Props> = ({ lang }) => {
 
       {/* Top Live Scoreboard */}
       <div className="capstone-scoreboard">
-        <div className="score-metric-card" data-vi-tip={UI_COPY.vi.capstone.stagesDone}>
+        <div className="score-metric-card">
           <span>{copy.stagesDone}</span>
           <strong>
             {completedStagesCount} / {stages.length}
           </strong>
           <small>{lang === 'vi' ? 'Cả 5 Khối Trụ cột' : 'All 5 Pillars'}</small>
         </div>
-        <div className="score-metric-card" data-vi-tip="Điểm tổng hợp dựa trên 4 tiêu chí: Đánh đổi, Ranh giới, Vận hành Day-2 & Quản trị.">
+        <div className="score-metric-card">
           <span>{copy.masteryScore}</span>
           <strong className={overallMasteryScore >= 85 ? 'text-success' : 'text-amber'}>
             {overallMasteryScore} / 100
           </strong>
           <small>{lang === 'vi' ? 'Đánh đổi, Ranh giới, Day-2 & Quản trị' : 'Trade-offs, Boundaries, Day-2 & Gov'}</small>
         </div>
-        <div className="score-metric-card" data-vi-tip="Chi phí vận hành hàng tháng ước tính và tổng chi phí 3 năm (36 tháng).">
+        <div className="score-metric-card">
           <span>{copy.monthlyOpex}</span>
           <strong>${totalMonthlyCost.toLocaleString()}/mo</strong>
           <small>3Y Run Cost: ${(totalMonthlyCost * 36).toLocaleString()}</small>
         </div>
-        <div className="score-metric-card" data-vi-tip="Số lượng lỗi nghiêm trọng tiềm ẩn từ các lựa chọn kiến trúc chưa tối ưu.">
+        <div className="score-metric-card">
           <span>{copy.criticalFlaws}</span>
           <strong className={criticalRisks === 0 ? 'text-success' : 'text-danger'}>{criticalRisks}</strong>
           <small>Worst P95 Latency: {maxLatency} ms</small>
@@ -123,15 +120,12 @@ export const CapstoneArena: React.FC<Props> = ({ lang }) => {
       <div className="stage-stepper">
         {stages.map((st, idx) => {
           const picked = st.choices.find((c) => c.id === selectedChoices[st.id]);
-          const viSt = viStages[idx];
           return (
             <button
               key={st.id}
               id={`capstone-step-${st.stageNumber}`}
               className={`stage-step-btn ${activeStageIdx === idx ? 'active' : ''} ${picked ? (picked.isOptimal ? 'optimal' : 'suboptimal') : ''}`}
               onClick={() => setActiveStageIdx(idx)}
-              data-vi-title={`Giai đoạn ${st.stageNumber}: ${viSt?.title}`}
-              data-vi-tip={viSt?.pillarBadge}
             >
               <span className="step-num">{copy.stageWord} {st.stageNumber}</span>
               <strong className="step-title">{st.pillarBadge.split(':')[0]}</strong>
@@ -146,7 +140,7 @@ export const CapstoneArena: React.FC<Props> = ({ lang }) => {
       {/* Active Stage Decision Workspace */}
       <div className="capstone-stage-card">
         <div className="stage-card-header">
-          <div data-vi-title={currentViStage.title} data-vi-tip={currentViStage.scenarioPrompt}>
+          <div>
             <span className="pillar-chip">{currentStage.pillarBadge}</span>
             <h3>
               {copy.stageWord} {currentStage.stageNumber}: {currentStage.title}
@@ -163,32 +157,25 @@ export const CapstoneArena: React.FC<Props> = ({ lang }) => {
           )}
         </div>
 
-        <p className="scenario-narrative" data-vi-tip={currentViStage.scenarioPrompt}>
-          {currentStage.scenarioPrompt}
-        </p>
+        <p className="scenario-narrative">{currentStage.scenarioPrompt}</p>
 
         <div className="constraints-strip">
           <strong>{copy.constraintsTitle}</strong>
           <ul>
             {currentStage.constraints.map((c, i) => (
-              <li key={i} data-vi-tip={currentViStage.constraints[i]}>
-                {c}
-              </li>
+              <li key={i}>{c}</li>
             ))}
           </ul>
         </div>
 
         <div className="capstone-choices-list">
-          {currentStage.choices.map((ch, idx) => {
+          {currentStage.choices.map((ch) => {
             const isSelected = selectedChoices[currentStage.id] === ch.id;
-            const viCh = currentViStage.choices[idx];
             return (
               <div
                 key={ch.id}
                 onClick={() => handleSelectChoice(currentStage.id, ch.id)}
                 className={`capstone-choice-item ${isSelected ? (ch.isOptimal ? 'selected-optimal' : 'selected-risk') : ''}`}
-                data-vi-title={viCh?.label}
-                data-vi-tip={viCh?.architectureSummary}
               >
                 <div className="choice-top-bar">
                   <h4>{ch.label}</h4>
@@ -202,13 +189,13 @@ export const CapstoneArena: React.FC<Props> = ({ lang }) => {
 
                 {isSelected && (
                   <div className="choice-feedback-box">
-                    <div className="feedback-row" data-vi-tip={viCh?.architectFeedback}>
+                    <div className="feedback-row">
                       <Target size={17} />
                       <div>
                         <strong>{copy.saEval}</strong> {ch.architectFeedback}
                       </div>
                     </div>
-                    <div className="feedback-row stakeholder" data-vi-tip={viCh?.stakeholderReaction}>
+                    <div className="feedback-row stakeholder">
                       <Sparkles size={17} />
                       <div>
                         <strong>{copy.boardReaction}</strong> <em>{ch.stakeholderReaction}</em>
@@ -236,7 +223,7 @@ export const CapstoneArena: React.FC<Props> = ({ lang }) => {
       {/* 7-Layer SA Decision Gatekeeper Checklist (Expanded from Handbook Section 7) */}
       <div className="gatekeeper-section">
         <div className="panel-title-row">
-          <div data-vi-title={UI_COPY.vi.capstone.gateTitle} data-vi-tip={UI_COPY.vi.capstone.gateSubtitle}>
+          <div>
             <span className="eyebrow-tag">{copy.gateEyebrow}</span>
             <h3>
               <ClipboardCheck size={20} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
@@ -250,20 +237,10 @@ export const CapstoneArena: React.FC<Props> = ({ lang }) => {
         </div>
 
         <div className="gatekeeper-grid">
-          {gates.map((gate, idx) => {
+          {gates.map((gate) => {
             const isChecked = !!checkedGates[gate.id];
-            const viGate = viGates[idx];
             return (
-              <div
-                key={gate.id}
-                className={`gate-card ${isChecked ? 'verified' : 'unverified'}`}
-                data-vi-title={viGate?.layer}
-                data-vi-tip={
-                  viGate
-                    ? `${viGate.question} — Nếu vi phạm: ${viGate.redLineFailure}`
-                    : undefined
-                }
-              >
+              <div key={gate.id} className={`gate-card ${isChecked ? 'verified' : 'unverified'}`}>
                 <div className="gate-header">
                   <label className="gate-checkbox-label">
                     <input
