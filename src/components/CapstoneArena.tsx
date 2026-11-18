@@ -14,6 +14,7 @@ import {
   Sparkles,
   Target
 } from 'lucide-react';
+import { GlossaryText } from './GlossaryText';
 
 interface Props {
   lang: Lang;
@@ -157,13 +158,13 @@ export const CapstoneArena: React.FC<Props> = ({ lang }) => {
           )}
         </div>
 
-        <p className="scenario-narrative">{currentStage.scenarioPrompt}</p>
+        <p className="scenario-narrative"><GlossaryText text={currentStage.scenarioPrompt} /></p>
 
         <div className="constraints-strip">
           <strong>{copy.constraintsTitle}</strong>
           <ul>
             {currentStage.constraints.map((c, i) => (
-              <li key={i}>{c}</li>
+              <li key={i}><GlossaryText text={c} /></li>
             ))}
           </ul>
         </div>
@@ -178,27 +179,27 @@ export const CapstoneArena: React.FC<Props> = ({ lang }) => {
                 className={`capstone-choice-item ${isSelected ? (ch.isOptimal ? 'selected-optimal' : 'selected-risk') : ''}`}
               >
                 <div className="choice-top-bar">
-                  <h4>{ch.label}</h4>
+                  <h4><GlossaryText text={ch.label} /></h4>
                   <div className="choice-badges">
                     <span className="badge-mono">${ch.monthlyCostUsd.toLocaleString()}/mo</span>
                     {ch.p95LatencyMs > 0 && <span className="badge-mono">P95: {ch.p95LatencyMs}ms</span>}
                     <span className={`risk-tag ${ch.riskLevel.toLowerCase()}`}>Risk: {ch.riskLevel}</span>
                   </div>
                 </div>
-                <p className="choice-summary">{ch.architectureSummary}</p>
+                <p className="choice-summary"><GlossaryText text={ch.architectureSummary} /></p>
 
                 {isSelected && (
                   <div className="choice-feedback-box">
                     <div className="feedback-row">
                       <Target size={17} />
                       <div>
-                        <strong>{copy.saEval}</strong> {ch.architectFeedback}
+                        <strong>{copy.saEval}</strong> <GlossaryText text={ch.architectFeedback} />
                       </div>
                     </div>
                     <div className="feedback-row stakeholder">
                       <Sparkles size={17} />
                       <div>
-                        <strong>{copy.boardReaction}</strong> <em>{ch.stakeholderReaction}</em>
+                        <strong>{copy.boardReaction}</strong> <em><GlossaryText text={ch.stakeholderReaction} /></em>
                       </div>
                     </div>
                   </div>
@@ -250,22 +251,22 @@ export const CapstoneArena: React.FC<Props> = ({ lang }) => {
                         setCheckedGates((prev) => ({ ...prev, [gate.id]: e.target.checked }))
                       }
                     />
-                    <strong>{gate.layer}</strong>
+                    <strong><GlossaryText text={gate.layer} /></strong>
                   </label>
                   <span className="pillar-mini-tag">{gate.pillarBadge}</span>
                 </div>
-                <p className="gate-question">{gate.question}</p>
+                <p className="gate-question"><GlossaryText text={gate.question} /></p>
                 <div className="gate-details">
                   <div className="gate-redline">
                     <ShieldAlert size={14} />
                     <span>
-                      <strong>{copy.ifViolated}</strong> {gate.redLineFailure}
+                      <strong>{copy.ifViolated}</strong> <GlossaryText text={gate.redLineFailure} />
                     </span>
                   </div>
                   <div className="gate-fix">
                     <CheckCircle2 size={14} />
                     <span>
-                      <strong>{copy.saStandard}</strong> {gate.architectRemediation}
+                      <strong>{copy.saStandard}</strong> <GlossaryText text={gate.architectRemediation} />
                     </span>
                   </div>
                 </div>

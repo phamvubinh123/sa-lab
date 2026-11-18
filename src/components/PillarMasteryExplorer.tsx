@@ -17,6 +17,7 @@ import {
   Wrench
 } from 'lucide-react';
 import { TopicFlowDiagram } from './ArchitectureFlowDiagram';
+import { GlossaryText } from './GlossaryText';
 
 interface Props {
   lang: Lang;
@@ -141,12 +142,12 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
               <Compass size={20} />
               <div>
                 <strong>{copy.goldenRuleLabel}</strong>
-                <p>{currentTopic.goldenRule}</p>
+                <p><GlossaryText text={currentTopic.goldenRule} /></p>
               </div>
             </div>
 
             <p className="business-context-p">
-              <strong>{copy.contextLabel}</strong> {currentTopic.businessContext}
+              <strong>{copy.contextLabel}</strong> <GlossaryText text={currentTopic.businessContext} />
             </p>
           </div>
 
@@ -178,14 +179,14 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
                       <span>Ops: {opt.opsComplexity}</span>
                     </div>
                   </div>
-                  <h4>{opt.name}</h4>
-                  <p className="option-tagline">{opt.tagline}</p>
+                  <h4><GlossaryText text={opt.name} /></h4>
+                  <p className="option-tagline"><GlossaryText text={opt.tagline} /></p>
 
                   <div className="pros-cons-block">
                     <strong>{copy.strengths}</strong>
                     <ul className="pros-list">
                       {opt.pros.map((p, i) => (
-                        <li key={i}>{p}</li>
+                        <li key={i}><GlossaryText text={p} /></li>
                       ))}
                     </ul>
                   </div>
@@ -194,13 +195,13 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
                     <strong>{copy.tradeOffsRisks}</strong>
                     <ul className="cons-list">
                       {opt.cons.map((c, i) => (
-                        <li key={i}>{c}</li>
+                        <li key={i}><GlossaryText text={c} /></li>
                       ))}
                     </ul>
                   </div>
 
                   <div className="when-to-use-footer">
-                    <strong>{copy.whenToUse}</strong> {opt.whenToUse}
+                    <strong>{copy.whenToUse}</strong> <GlossaryText text={opt.whenToUse} />
                   </div>
                 </div>
               ))}
@@ -255,12 +256,12 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
               <div className="stack-cards">
                 {currentTopic.boundaries.map((b, i) => (
                   <div key={i} className="boundary-item-card">
-                    <h4>{b.zone}</h4>
+                    <h4><GlossaryText text={b.zone} /></h4>
                     <p>
-                      <strong>{copy.coreResp}</strong> {b.responsibility}
+                      <strong>{copy.coreResp}</strong> <GlossaryText text={b.responsibility} />
                     </p>
                     <p className="redline-text">
-                      <strong>{copy.neverCross}</strong> {b.mustNeverCross}
+                      <strong>{copy.neverCross}</strong> <GlossaryText text={b.mustNeverCross} />
                     </p>
                   </div>
                 ))}
@@ -275,15 +276,15 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
               <div className="stack-cards">
                 {currentTopic.antiPatterns.map((ap, i) => (
                   <div key={i} className="antipattern-item-card">
-                    <h4>{ap.name}</h4>
+                    <h4><GlossaryText text={ap.name} /></h4>
                     <p>
-                      <strong>{copy.symptom}</strong> {ap.symptom}
+                      <strong>{copy.symptom}</strong> <GlossaryText text={ap.symptom} />
                     </p>
                     <p className="impact-text">
-                      <strong>{copy.impact}</strong> {ap.businessImpact}
+                      <strong>{copy.impact}</strong> <GlossaryText text={ap.businessImpact} />
                     </p>
                     <p className="fix-text">
-                      <strong>{copy.remediation}</strong> {ap.remediation}
+                      <strong>{copy.remediation}</strong> <GlossaryText text={ap.remediation} />
                     </p>
                   </div>
                 ))}
@@ -300,15 +301,15 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
               </div>
               {currentTopic.day2Ops.map((op, i) => (
                 <div key={i} className="day2-card">
-                  <h4>{copy.failureScenario} {op.failureMode}</h4>
+                  <h4>{copy.failureScenario} <GlossaryText text={op.failureMode} /></h4>
                   <p>
-                    <strong>{copy.blastRadius}</strong> {op.blastRadius}
+                    <strong>{copy.blastRadius}</strong> <GlossaryText text={op.blastRadius} />
                   </p>
                   <p>
-                    <strong>{copy.day2Mitigation}</strong> {op.mitigationMechanism}
+                    <strong>{copy.day2Mitigation}</strong> <GlossaryText text={op.mitigationMechanism} />
                   </p>
                   <div className="sla-badge-box">
-                    <strong>{copy.keySli}</strong> {op.keyMetric}
+                    <strong>{copy.keySli}</strong> <GlossaryText text={op.keyMetric} />
                   </div>
                 </div>
               ))}
@@ -323,7 +324,7 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
                 {currentTopic.governanceRules.map((rule, i) => (
                   <li key={i}>
                     <CheckCircle2 size={16} className="text-success" />
-                    <span>{rule}</span>
+                    <span><GlossaryText text={rule} /></span>
                   </li>
                 ))}
               </ul>

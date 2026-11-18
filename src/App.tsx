@@ -5,6 +5,7 @@ import { PillarMasteryExplorer } from './components/PillarMasteryExplorer';
 import { InteractiveSimulators } from './components/InteractiveSimulators';
 import { CapstoneArena } from './components/CapstoneArena';
 import { AdrAndBoardroomStudio } from './components/AdrAndBoardroomStudio';
+import { GlossaryTooltip } from './components/GlossaryText';
 import {
   Award,
   Compass,
@@ -62,6 +63,7 @@ export function App() {
 
   return (
     <div className="app-shell">
+      <GlossaryTooltip />
       {/* Top Enterprise Workbench Header */}
       <header className="top-workbench-header">
         <div className="header-inner">

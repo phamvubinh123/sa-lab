@@ -17,6 +17,7 @@ import {
   Workflow,
   Zap
 } from 'lucide-react';
+import { GlossaryText } from './GlossaryText';
 
 export type NodeTone = 'sky' | 'teal' | 'emerald' | 'amber' | 'crimson' | 'slate';
 
@@ -32,10 +33,20 @@ const FlowNode: React.FC<FlowNodeProps> = ({ icon, title, subtitle, badge, tone 
   <div className={`arch-node tone-${tone}`}>
     <div className="arch-node-head">
       <span className="arch-node-icon">{icon}</span>
-      {badge && <span className="arch-node-badge">{badge}</span>}
+      {badge && (
+        <span className="arch-node-badge">
+          <GlossaryText text={badge} />
+        </span>
+      )}
     </div>
-    <strong className="arch-node-title">{title}</strong>
-    {subtitle && <span className="arch-node-sub">{subtitle}</span>}
+    <strong className="arch-node-title">
+      <GlossaryText text={title} />
+    </strong>
+    {subtitle && (
+      <span className="arch-node-sub">
+        <GlossaryText text={subtitle} />
+      </span>
+    )}
   </div>
 );
 
@@ -50,7 +61,11 @@ const FlowArrow: React.FC<FlowArrowProps> = ({ label, tone = 'normal', vertical 
     <div className="arch-arrow-line">
       <span className="arch-arrow-pulse" />
     </div>
-    {label && <span className="arch-arrow-label">{label}</span>}
+    {label && (
+      <span className="arch-arrow-label">
+        <GlossaryText text={label} />
+      </span>
+    )}
     <span className="arch-arrow-tip">{vertical ? '▼' : '▶'}</span>
   </div>
 );
