@@ -81,6 +81,10 @@ export function App() {
           </div>
 
           <div className="header-right-cluster">
+            <span className="app-version-pill" title="SA-Lab Current Release">
+              v1.4.0
+            </span>
+
             <div className="lang-switcher" role="group" aria-label="Language Switcher">
               <Globe size={14} className="lang-icon" />
               <button

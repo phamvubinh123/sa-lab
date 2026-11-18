@@ -2111,4 +2111,18 @@ input[type='range'] {
   }
 }
 
+.app-version-pill {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent-teal);
+  background: var(--accent-teal-soft);
+  border: 1px solid hsla(174, 72%, 38%, 0.3);
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+
 
