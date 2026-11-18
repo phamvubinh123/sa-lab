@@ -11,6 +11,7 @@ import {
   Sliders,
   Zap
 } from 'lucide-react';
+import { Sim1LiveDiagram, Sim2LiveDiagram } from './ArchitectureFlowDiagram';
 
 interface Props {
   lang: Lang;
@@ -484,20 +485,19 @@ export const InteractiveSimulators: React.FC<Props> = ({ lang }) => {
             </div>
 
             <div className="architecture-state-diagram">
-              <h4>Live Request & Fault Isolation Topology</h4>
-              <pre className="ascii-box">
-{`[ Client (${trafficMultiplier}x Load) ] ──► CDN Edge (${bypassCdnDynamic ? 'Static Shell Only [SAFE]' : 'Caching Dynamic Stock [OVERSELLING!]'})
-       │
-       ▼
-[ HA API Gateway ] ──► Idempotency Check: ${feBeIdempotency ? 'FE UUID + Redis Redlock [ACTIVE]' : 'DISABLED [DOUBLE CHARGES!]'}
-       │
-       ├──► [ Bulkhead Pool A: ${bulkheadIsolation ? '80% Dedicated Sales Threads' : '100% Shared Pool (STARVED BY PDF!)'} ]
-       │         ├──► Redis Cache-Aside: ${redisMutexLock ? 'Mutex Single-Flight Lock [SAFE]' : 'Unprotected Misses [STAMPEDE!]'}
-       │         ├──► Partner Payment API: ${circuitBreakerEnabled ? 'Circuit Breaker OPEN (1ms Fail-Fast)' : `Blocking ${partnerApiLatencyMs}ms Hang!`}
-       │         └──► Workflow (${workflowSteps} steps): ${orchestrationOutbox ? 'Orchestration Saga + Outbox [ATOMIC]' : 'Choreography Event Spaghetti'}
-       │
-       └──► [ Bulkhead Pool B: ${bulkheadIsolation ? '20% Capped PDF Report Threads' : 'Sharing Sales Pool!'} ] (${pdfAccountants} Accountants)`}
-              </pre>
+              <h4>Live Request &amp; Fault Isolation Topology</h4>
+              <Sim1LiveDiagram
+                trafficMultiplier={trafficMultiplier}
+                pdfAccountants={pdfAccountants}
+                partnerApiLatencyMs={partnerApiLatencyMs}
+                workflowSteps={workflowSteps}
+                bypassCdnDynamic={bypassCdnDynamic}
+                redisMutexLock={redisMutexLock}
+                feBeIdempotency={feBeIdempotency}
+                circuitBreakerEnabled={circuitBreakerEnabled}
+                bulkheadIsolation={bulkheadIsolation}
+                orchestrationOutbox={orchestrationOutbox}
+              />
             </div>
 
             <div className="incident-feed">
@@ -719,19 +719,14 @@ export const InteractiveSimulators: React.FC<Props> = ({ lang }) => {
 
             <div className="architecture-state-diagram">
               <h4>Active Data &amp; AI Pipeline Blueprint</h4>
-              <pre className="ascii-box">
-{`[ SAP ERP ] ──(${sapExtractionMode === 'odp-cdc' ? 'Sanctioned ODP/SLT CDC [SAFE]' : 'Raw BSEG Triggers [LICENSE BREACH!]'})──► [ MDM Golden Record ]
-                                                                          │
-                 ┌────────────────────────────────────────────────────────┘
-                 ▼
-[ CQRS Layer (${readWriteRatio}:1 R/W) ]: ${cqrsEnabled ? '3NF SQL Write DB ──(CDC)──► Elasticsearch Read DB (<0.5s)' : 'Single Monolithic SQL DB (Lock Contention!)'}
-                 │
-                 ▼
-[ AI Gateway Router ]: ${slmRoutePercent}% SLM (Phi-4/Llama-3) | ${100 - slmRoutePercent}% Frontier LLM (Confidence Escalation)
-                 │
-                 ▼
-[ Retrieval & Security ]: ${ragStrategy.toUpperCase()} + ${aclMode === 'obo-hybrid-trim' ? 'Entra ID OBO Hybrid ACL Trimming + WORM Audit' : aclMode.toUpperCase()}`}
-              </pre>
+              <Sim2LiveDiagram
+                sapExtractionMode={sapExtractionMode}
+                cqrsEnabled={cqrsEnabled}
+                readWriteRatio={readWriteRatio}
+                slmRoutePercent={slmRoutePercent}
+                ragStrategy={ragStrategy}
+                aclMode={aclMode}
+              />
             </div>
 
             <div className="incident-feed">

@@ -16,6 +16,7 @@ import {
   Terminal,
   Wrench
 } from 'lucide-react';
+import { TopicFlowDiagram } from './ArchitectureFlowDiagram';
 
 interface Props {
   lang: Lang;
@@ -155,7 +156,7 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
               <Terminal size={18} />
               <h3>{copy.flowHeading}</h3>
             </div>
-            <pre className="ascii-box">{currentTopic.asciiFlow}</pre>
+            <TopicFlowDiagram topicId={currentTopic.id} />
           </div>
 
           {/* Dimension 1: Quantitative Trade-Off Matrix & Option Comparison */}
