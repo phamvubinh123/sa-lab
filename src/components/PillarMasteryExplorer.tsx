@@ -27,6 +27,8 @@ interface Props {
 export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds, onToggleMastered }) => {
   const pillars = getLocalizedPillars(lang);
   const topics = getLocalizedTopics(lang);
+  const viPillars = getLocalizedPillars('vi');
+  const viTopics = getLocalizedTopics('vi');
   const copy = UI_COPY[lang].explorer;
 
   const [selectedPillarId, setSelectedPillarId] = useState<string>('pillar-1');
@@ -44,6 +46,8 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
   const currentPillar = pillars.find((p) => p.id === selectedPillarId) || pillars[0];
   const currentTopic: ArchitectureTopic =
     topics.find((t) => t.id === selectedTopicId) || pillarTopics[0] || topics[0];
+  const currentViTopic: ArchitectureTopic =
+    viTopics.find((t) => t.id === currentTopic.id) || viTopics[0];
 
   const isMastered = masteredTopicIds.includes(currentTopic.id);
 
@@ -55,6 +59,7 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
           const topicsInPillar = topics.filter((t) => t.pillarId === pillar.id);
           const doneCount = topicsInPillar.filter((t) => masteredTopicIds.includes(t.id)).length;
           const isActive = pillar.id === selectedPillarId;
+          const viPillar = viPillars.find((vp) => vp.id === pillar.id);
 
           return (
             <button
@@ -62,6 +67,8 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
               id={`pillar-btn-${pillar.number}`}
               className={`pillar-card-btn ${isActive ? 'active' : ''}`}
               onClick={() => handleSelectPillar(pillar.id)}
+              data-vi-title={viPillar?.title}
+              data-vi-tip={viPillar?.subtitle}
             >
               <div className="pillar-card-top">
                 <span className="pillar-num-badge">{copy.pillarWord} {pillar.number}</span>
@@ -88,12 +95,15 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
           <div className="topic-nav-list">
             {pillarTopics.map((topic) => {
               const done = masteredTopicIds.includes(topic.id);
+              const viT = viTopics.find((vt) => vt.id === topic.id);
               return (
                 <button
                   key={topic.id}
                   id={`topic-btn-${topic.id}`}
                   className={`topic-nav-item ${topic.id === currentTopic.id ? 'active' : ''}`}
                   onClick={() => setSelectedTopicId(topic.id)}
+                  data-vi-title={viT?.title}
+                  data-vi-tip={viT?.subtitle}
                 >
                   <div className="topic-nav-top">
                     <span className="topic-code">{topic.code}</span>
@@ -109,9 +119,14 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
           <div className="pillar-focus-summary">
             <h4>{copy.coreMandates}</h4>
             <ul>
-              {currentPillar.coreFocus.map((item, idx) => (
-                <li key={idx}>{item}</li>
-              ))}
+              {currentPillar.coreFocus.map((item, idx) => {
+                const viFocus = viPillars.find((vp) => vp.id === currentPillar.id)?.coreFocus[idx];
+                return (
+                  <li key={idx} data-vi-tip={viFocus}>
+                    {item}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </aside>
@@ -120,7 +135,10 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
         <section className="topic-detail-canvas">
           <div className="topic-header-card">
             <div className="topic-header-top">
-              <div>
+              <div
+                data-vi-title={currentViTopic.title}
+                data-vi-tip={currentViTopic.subtitle}
+              >
                 <span className="eyebrow-tag">
                   {copy.moduleWord} {currentTopic.code} · {currentPillar.shortTitle.toUpperCase()}
                 </span>
@@ -131,13 +149,19 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
                 id="btn-toggle-mastery"
                 className={isMastered ? 'btn-mastered' : 'btn-primary'}
                 onClick={() => onToggleMastered(currentTopic.id)}
+                data-vi-title="Đánh dấu hoàn thành"
+                data-vi-tip="Đánh dấu bạn đã nắm vững module kiến trúc này để cập nhật thanh tiến độ."
               >
                 <CheckCircle2 size={16} />
                 {isMastered ? copy.markedMastered : copy.markMastered}
               </button>
             </div>
 
-            <div className="golden-rule-callout">
+            <div
+              className="golden-rule-callout"
+              data-vi-title="Nguyên tắc Vàng (Golden Rule)"
+              data-vi-tip={currentViTopic.goldenRule}
+            >
               <Compass size={20} />
               <div>
                 <strong>{copy.goldenRuleLabel}</strong>
@@ -145,14 +169,22 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
               </div>
             </div>
 
-            <p className="business-context-p">
+            <p
+              className="business-context-p"
+              data-vi-title="Bối cảnh nghiệp vụ & Hệ thống"
+              data-vi-tip={currentViTopic.businessContext}
+            >
               <strong>{copy.contextLabel}</strong> {currentTopic.businessContext}
             </p>
           </div>
 
           {/* Architecture Flow Topology */}
           <div className="detail-section-card">
-            <div className="card-heading">
+            <div
+              className="card-heading"
+              data-vi-title="Sơ đồ luồng kiến trúc"
+              data-vi-tip="Rê chuột vào từng khối (node) trong sơ đồ bên dưới để xem giải thích chi tiết bằng tiếng Việt."
+            >
               <Terminal size={18} />
               <h3>{copy.flowHeading}</h3>
             </div>
@@ -161,49 +193,69 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
 
           {/* Dimension 1: Quantitative Trade-Off Matrix & Option Comparison */}
           <div className="detail-section-card">
-            <div className="card-heading">
+            <div
+              className="card-heading"
+              data-vi-title={UI_COPY.vi.explorer.dim1Heading}
+              data-vi-tip="So sánh các phương án kiến trúc theo chi phí, độ phức tạp vận hành và ma trận đánh đổi 5 trục."
+            >
               <Scale size={18} />
               <h3>{copy.dim1Heading}</h3>
             </div>
 
             <div className="options-grid-3">
-              {currentTopic.optionsComparison.options.map((opt, idx) => (
-                <div key={opt.id} className={`arch-option-card ${idx === 0 ? 'recommended' : ''}`}>
-                  <div className="option-card-header">
-                    <span className="option-rank-badge">
-                      {idx === 0 ? copy.recommendedBadge : `${copy.alternativeBadge} ${idx}`}
-                    </span>
-                    <div className="option-meta-tags">
-                      <span>Cost: {opt.costProfile}</span>
-                      <span>Ops: {opt.opsComplexity}</span>
+              {currentTopic.optionsComparison.options.map((opt, idx) => {
+                const viOpt = currentViTopic.optionsComparison.options[idx];
+                return (
+                  <div
+                    key={opt.id}
+                    className={`arch-option-card ${idx === 0 ? 'recommended' : ''}`}
+                    data-vi-title={viOpt?.name}
+                    data-vi-tip={
+                      viOpt
+                        ? `${viOpt.tagline} — Khi nào dùng: ${viOpt.whenToUse}`
+                        : undefined
+                    }
+                  >
+                    <div className="option-card-header">
+                      <span className="option-rank-badge">
+                        {idx === 0 ? copy.recommendedBadge : `${copy.alternativeBadge} ${idx}`}
+                      </span>
+                      <div className="option-meta-tags">
+                        <span>Cost: {opt.costProfile}</span>
+                        <span>Ops: {opt.opsComplexity}</span>
+                      </div>
+                    </div>
+                    <h4>{opt.name}</h4>
+                    <p className="option-tagline">{opt.tagline}</p>
+
+                    <div className="pros-cons-block">
+                      <strong>{copy.strengths}</strong>
+                      <ul className="pros-list">
+                        {opt.pros.map((p, i) => (
+                          <li key={i} data-vi-tip={viOpt?.pros[i]}>
+                            {p}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="pros-cons-block">
+                      <strong>{copy.tradeOffsRisks}</strong>
+                      <ul className="cons-list">
+                        {opt.cons.map((c, i) => (
+                          <li key={i} data-vi-tip={viOpt?.cons[i]}>
+                            {c}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="when-to-use-footer" data-vi-tip={viOpt?.whenToUse}>
+                      <strong>{copy.whenToUse}</strong> {opt.whenToUse}
                     </div>
                   </div>
-                  <h4>{opt.name}</h4>
-                  <p className="option-tagline">{opt.tagline}</p>
-
-                  <div className="pros-cons-block">
-                    <strong>{copy.strengths}</strong>
-                    <ul className="pros-list">
-                      {opt.pros.map((p, i) => (
-                        <li key={i}>{p}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="pros-cons-block">
-                    <strong>{copy.tradeOffsRisks}</strong>
-                    <ul className="cons-list">
-                      {opt.cons.map((c, i) => (
-                        <li key={i}>{c}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="when-to-use-footer">
-                    <strong>{copy.whenToUse}</strong> {opt.whenToUse}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Quantitative 5-Axis Comparison Bars */}
@@ -220,27 +272,35 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
               </div>
 
               <div className="axes-stack">
-                {currentTopic.optionsComparison.axes.map((ax) => (
-                  <div key={ax.metric} className="axis-row">
-                    <div className="axis-name">{ax.metric}</div>
-                    <div className="axis-bars-group">
-                      <div className="bar-line">
-                        <div className="bar-fill opt-a" style={{ width: `${ax.optionA}%` }} />
-                        <span>{ax.optionA}%</span>
-                      </div>
-                      <div className="bar-line">
-                        <div className="bar-fill opt-b" style={{ width: `${ax.optionB}%` }} />
-                        <span>{ax.optionB}%</span>
-                      </div>
-                      {ax.optionC !== undefined && (
+                {currentTopic.optionsComparison.axes.map((ax, idx) => {
+                  const viAx = currentViTopic.optionsComparison.axes[idx];
+                  return (
+                    <div
+                      key={ax.metric}
+                      className="axis-row"
+                      data-vi-title={viAx?.metric}
+                      data-vi-tip={`So sánh định lượng giữa các phương án theo tiêu chí: ${viAx?.metric || ax.metric}.`}
+                    >
+                      <div className="axis-name">{ax.metric}</div>
+                      <div className="axis-bars-group">
                         <div className="bar-line">
-                          <div className="bar-fill opt-c" style={{ width: `${ax.optionC}%` }} />
-                          <span>{ax.optionC}%</span>
+                          <div className="bar-fill opt-a" style={{ width: `${ax.optionA}%` }} />
+                          <span>{ax.optionA}%</span>
                         </div>
-                      )}
+                        <div className="bar-line">
+                          <div className="bar-fill opt-b" style={{ width: `${ax.optionB}%` }} />
+                          <span>{ax.optionB}%</span>
+                        </div>
+                        {ax.optionC !== undefined && (
+                          <div className="bar-line">
+                            <div className="bar-fill opt-c" style={{ width: `${ax.optionC}%` }} />
+                            <span>{ax.optionC}%</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -248,45 +308,77 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
           {/* Dimension 2: Design Boundaries & Anti-Patterns ("Tử huyệt") */}
           <div className="two-col-detail-grid">
             <div className="detail-section-card">
-              <div className="card-heading">
+              <div
+                className="card-heading"
+                data-vi-title={UI_COPY.vi.explorer.dim2Heading}
+                data-vi-tip="Ranh giới trách nhiệm giữa các thành phần — không bao giờ được vượt qua lằn ranh đỏ."
+              >
                 <Layers size={18} />
                 <h3>{copy.dim2Heading}</h3>
               </div>
               <div className="stack-cards">
-                {currentTopic.boundaries.map((b, i) => (
-                  <div key={i} className="boundary-item-card">
-                    <h4>{b.zone}</h4>
-                    <p>
-                      <strong>{copy.coreResp}</strong> {b.responsibility}
-                    </p>
-                    <p className="redline-text">
-                      <strong>{copy.neverCross}</strong> {b.mustNeverCross}
-                    </p>
-                  </div>
-                ))}
+                {currentTopic.boundaries.map((b, i) => {
+                  const viB = currentViTopic.boundaries[i];
+                  return (
+                    <div
+                      key={i}
+                      className="boundary-item-card"
+                      data-vi-title={viB?.zone}
+                      data-vi-tip={
+                        viB
+                          ? `Trách nhiệm: ${viB.responsibility} | Lằn ranh đỏ: ${viB.mustNeverCross}`
+                          : undefined
+                      }
+                    >
+                      <h4>{b.zone}</h4>
+                      <p>
+                        <strong>{copy.coreResp}</strong> {b.responsibility}
+                      </p>
+                      <p className="redline-text">
+                        <strong>{copy.neverCross}</strong> {b.mustNeverCross}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
             <div className="detail-section-card">
-              <div className="card-heading">
+              <div
+                className="card-heading"
+                data-vi-title={UI_COPY.vi.explorer.antiPatternsHeading}
+                data-vi-tip="Các lỗi kiến trúc kinh điển ('tử huyệt') gây sập hệ thống hoặc đội chi phí."
+              >
                 <AlertOctagon size={18} />
                 <h3>{copy.antiPatternsHeading}</h3>
               </div>
               <div className="stack-cards">
-                {currentTopic.antiPatterns.map((ap, i) => (
-                  <div key={i} className="antipattern-item-card">
-                    <h4>{ap.name}</h4>
-                    <p>
-                      <strong>{copy.symptom}</strong> {ap.symptom}
-                    </p>
-                    <p className="impact-text">
-                      <strong>{copy.impact}</strong> {ap.businessImpact}
-                    </p>
-                    <p className="fix-text">
-                      <strong>{copy.remediation}</strong> {ap.remediation}
-                    </p>
-                  </div>
-                ))}
+                {currentTopic.antiPatterns.map((ap, i) => {
+                  const viAp = currentViTopic.antiPatterns[i];
+                  return (
+                    <div
+                      key={i}
+                      className="antipattern-item-card"
+                      data-vi-title={viAp?.name}
+                      data-vi-tip={
+                        viAp
+                          ? `Hậu quả: ${viAp.businessImpact} | Khắc phục: ${viAp.remediation}`
+                          : undefined
+                      }
+                    >
+                      <h4>{ap.name}</h4>
+                      <p>
+                        <strong>{copy.symptom}</strong> {ap.symptom}
+                      </p>
+                      <p className="impact-text">
+                        <strong>{copy.impact}</strong> {ap.businessImpact}
+                      </p>
+                      <p className="fix-text">
+                        <strong>{copy.remediation}</strong> {ap.remediation}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -294,34 +386,54 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
           {/* Dimension 3: Day-2 Operational Feasibility & Dimension 4: Governance */}
           <div className="two-col-detail-grid">
             <div className="detail-section-card">
-              <div className="card-heading">
+              <div
+                className="card-heading"
+                data-vi-title={UI_COPY.vi.explorer.dim3Heading}
+                data-vi-tip="Khả năng vận hành thực tế sau khi go-live: xử lý sự cố, cô lập bán kính nổ và chỉ số SLI."
+              >
                 <Wrench size={18} />
                 <h3>{copy.dim3Heading}</h3>
               </div>
-              {currentTopic.day2Ops.map((op, i) => (
-                <div key={i} className="day2-card">
-                  <h4>{copy.failureScenario} {op.failureMode}</h4>
-                  <p>
-                    <strong>{copy.blastRadius}</strong> {op.blastRadius}
-                  </p>
-                  <p>
-                    <strong>{copy.day2Mitigation}</strong> {op.mitigationMechanism}
-                  </p>
-                  <div className="sla-badge-box">
-                    <strong>{copy.keySli}</strong> {op.keyMetric}
+              {currentTopic.day2Ops.map((op, i) => {
+                const viOp = currentViTopic.day2Ops[i];
+                return (
+                  <div
+                    key={i}
+                    className="day2-card"
+                    data-vi-title={viOp?.failureMode}
+                    data-vi-tip={
+                      viOp
+                        ? `Bán kính nổ: ${viOp.blastRadius} | Xử lý Day-2: ${viOp.mitigationMechanism}`
+                        : undefined
+                    }
+                  >
+                    <h4>{copy.failureScenario} {op.failureMode}</h4>
+                    <p>
+                      <strong>{copy.blastRadius}</strong> {op.blastRadius}
+                    </p>
+                    <p>
+                      <strong>{copy.day2Mitigation}</strong> {op.mitigationMechanism}
+                    </p>
+                    <div className="sla-badge-box">
+                      <strong>{copy.keySli}</strong> {op.keyMetric}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="detail-section-card">
-              <div className="card-heading">
+              <div
+                className="card-heading"
+                data-vi-title={UI_COPY.vi.explorer.dim4Heading}
+                data-vi-tip="Các quy tắc quản trị bắt buộc phải kiểm soát trước khi phê duyệt lên Production."
+              >
                 <Shield size={18} />
                 <h3>{copy.dim4Heading}</h3>
               </div>
               <ul className="governance-checklist">
                 {currentTopic.governanceRules.map((rule, i) => (
-                  <li key={i}>
+                  <li key={i} data-vi-tip={currentViTopic.governanceRules[i]}>
                     <CheckCircle2 size={16} className="text-success" />
                     <span>{rule}</span>
                   </li>

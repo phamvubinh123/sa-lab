@@ -5,6 +5,7 @@ import { PillarMasteryExplorer } from './components/PillarMasteryExplorer';
 import { InteractiveSimulators } from './components/InteractiveSimulators';
 import { CapstoneArena } from './components/CapstoneArena';
 import { AdrAndBoardroomStudio } from './components/AdrAndBoardroomStudio';
+import { ViHoverTooltip } from './components/ViHoverTooltip';
 import {
   Award,
   Compass,
@@ -59,9 +60,11 @@ export function App() {
 
   const masteryPercentage = Math.round((masteredTopicIds.length / TOPICS.length) * 100);
   const t = UI_COPY[lang];
+  const viCopy = UI_COPY.vi;
 
   return (
     <div className="app-shell">
+      <ViHoverTooltip enabled={lang === 'en'} />
       {/* Top Enterprise Workbench Header */}
       <header className="top-workbench-header">
         <div className="header-inner">
@@ -79,7 +82,13 @@ export function App() {
           </div>
 
           <div className="header-right-cluster">
-            <div className="lang-switcher" role="group" aria-label="Language Switcher">
+            <div
+              className="lang-switcher"
+              role="group"
+              aria-label="Language Switcher"
+              data-vi-title="Chuyển đổi ngôn ngữ"
+              data-vi-tip="Chuyển giữa Tiếng Anh (kèm giải thích Tiếng Việt khi rê chuột) và toàn bộ giao diện Tiếng Việt."
+            >
               <Globe size={14} className="lang-icon" />
               <button
                 id="btn-lang-en"
@@ -99,7 +108,11 @@ export function App() {
               </button>
             </div>
 
-            <div className="mastery-hud">
+            <div
+              className="mastery-hud"
+              data-vi-title={viCopy.masteryLabel}
+              data-vi-tip={`Theo dõi tiến độ làm chủ ${TOPICS.length} module kiến trúc doanh nghiệp của bạn.`}
+            >
               <div className="hud-stat">
                 <span>{t.masteryLabel}</span>
                 <strong>
@@ -119,6 +132,8 @@ export function App() {
             id="nav-tab-pillars"
             className={`mode-nav-btn ${activeTab === 'pillars' ? 'active' : ''}`}
             onClick={() => setActiveTab('pillars')}
+            data-vi-title={viCopy.nav.t1Title}
+            data-vi-tip={viCopy.nav.t1Sub}
           >
             <Layers size={17} />
             <div>
@@ -131,6 +146,8 @@ export function App() {
             id="nav-tab-simulators"
             className={`mode-nav-btn ${activeTab === 'simulators' ? 'active' : ''}`}
             onClick={() => setActiveTab('simulators')}
+            data-vi-title={viCopy.nav.t2Title}
+            data-vi-tip={viCopy.nav.t2Sub}
           >
             <Sliders size={17} />
             <div>
@@ -143,6 +160,8 @@ export function App() {
             id="nav-tab-capstone"
             className={`mode-nav-btn ${activeTab === 'capstone' ? 'active' : ''}`}
             onClick={() => setActiveTab('capstone')}
+            data-vi-title={viCopy.nav.t3Title}
+            data-vi-tip={viCopy.nav.t3Sub}
           >
             <Award size={17} />
             <div>
@@ -155,6 +174,8 @@ export function App() {
             id="nav-tab-adr"
             className={`mode-nav-btn ${activeTab === 'adr-boardroom' ? 'active' : ''}`}
             onClick={() => setActiveTab('adr-boardroom')}
+            data-vi-title={viCopy.nav.t4Title}
+            data-vi-tip={viCopy.nav.t4Sub}
           >
             <FileCheck2 size={17} />
             <div>

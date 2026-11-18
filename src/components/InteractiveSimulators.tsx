@@ -360,7 +360,11 @@ export const InteractiveSimulators: React.FC<Props> = ({ lang }) => {
             </div>
 
             <div className="toggle-list">
-              <label className={`toggle-card ${bypassCdnDynamic ? 'enabled' : ''}`}>
+              <label
+                className={`toggle-card ${bypassCdnDynamic ? 'enabled' : ''}`}
+                data-vi-title="Render Lai & Bỏ qua CDN cho Tồn kho"
+                data-vi-tip="CDN chỉ cache khung tĩnh HTML/JS/CSS (<50ms); tồn kho thực tế đi thẳng về Backend để tránh bán âm kho (Overselling)."
+              >
                 <input
                   type="checkbox"
                   checked={bypassCdnDynamic}
@@ -372,7 +376,11 @@ export const InteractiveSimulators: React.FC<Props> = ({ lang }) => {
                 </div>
               </label>
 
-              <label className={`toggle-card ${redisMutexLock ? 'enabled' : ''}`}>
+              <label
+                className={`toggle-card ${redisMutexLock ? 'enabled' : ''}`}
+                data-vi-title="Khóa Mutex Phân tán trên Redis"
+                data-vi-tip="Khi hot key hết hạn, chỉ 1 request duy nhất được xuống DB tái tạo cache — ngăn chặn bão truy vấn (Cache Stampede)."
+              >
                 <input
                   type="checkbox"
                   checked={redisMutexLock}
@@ -384,7 +392,11 @@ export const InteractiveSimulators: React.FC<Props> = ({ lang }) => {
                 </div>
               </label>
 
-              <label className={`toggle-card ${feBeIdempotency ? 'enabled' : ''}`}>
+              <label
+                className={`toggle-card ${feBeIdempotency ? 'enabled' : ''}`}
+                data-vi-title="Idempotency: FE sinh UUID, BE khóa Redlock"
+                data-vi-tip="Ngăn chặn trừ tiền 2 lần khi người dùng bấm thanh toán lại trên mạng 4G chập chờn."
+              >
                 <input
                   type="checkbox"
                   checked={feBeIdempotency}
@@ -396,7 +408,11 @@ export const InteractiveSimulators: React.FC<Props> = ({ lang }) => {
                 </div>
               </label>
 
-              <label className={`toggle-card ${circuitBreakerEnabled ? 'enabled' : ''}`}>
+              <label
+                className={`toggle-card ${circuitBreakerEnabled ? 'enabled' : ''}`}
+                data-vi-title="Cầu dao ngắt mạch 3 trạng thái"
+                data-vi-tip="Tự động chuyển sang OPEN khi API đối tác treo >3s — Fail-Fast trong 1ms và trả về phương án dự phòng."
+              >
                 <input
                   type="checkbox"
                   checked={circuitBreakerEnabled}
@@ -408,7 +424,11 @@ export const InteractiveSimulators: React.FC<Props> = ({ lang }) => {
                 </div>
               </label>
 
-              <label className={`toggle-card ${bulkheadIsolation ? 'enabled' : ''}`}>
+              <label
+                className={`toggle-card ${bulkheadIsolation ? 'enabled' : ''}`}
+                data-vi-title="Cô lập Tài nguyên Bulkhead (80% / 20%)"
+                data-vi-tip="Tách riêng pool xử lý đơn hàng (80%) và xuất báo cáo PDF nặng (20%) để kế toán không kéo sập luồng bán hàng."
+              >
                 <input
                   type="checkbox"
                   checked={bulkheadIsolation}
@@ -420,7 +440,11 @@ export const InteractiveSimulators: React.FC<Props> = ({ lang }) => {
                 </div>
               </label>
 
-              <label className={`toggle-card ${orchestrationOutbox ? 'enabled' : ''}`}>
+              <label
+                className={`toggle-card ${orchestrationOutbox ? 'enabled' : ''}`}
+                data-vi-title="Orchestration Saga + Transactional Outbox"
+                data-vi-tip="Quản lý rollback theo thứ tự LIFO cho quy trình >4 bước và đảm bảo không mất event nhờ Outbox + CDC."
+              >
                 <input
                   type="checkbox"
                   checked={orchestrationOutbox}
