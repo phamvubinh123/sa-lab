@@ -413,14 +413,16 @@ export const QuickTutorChat: React.FC<Props> = ({
       <div className="tutor-messages-list" ref={scrollRef}>
         {messages.map((msg) => (
           <div key={msg.id} className={`tutor-msg ${msg.role}`}>
-            <div className="tutor-msg-bubble">
-              {msg.content.split('\n').map((line, i) => (
-                <p key={i}>{line || '\u00A0'}</p>
-              ))}
+            <div className={`tutor-msg-bubble ${msg.content === '...' ? 'typing' : ''}`}>
+              {msg.content === '...' ? (
+                <span>{isVi ? 'Đang kết nối & trả lời...' : 'Streaming response...'}</span>
+              ) : (
+                msg.content.split('\n').map((line, i) => <p key={i}>{line || '\u00A0'}</p>)
+              )}
             </div>
           </div>
         ))}
-        {isLoading && (
+        {isLoading && !hasLiveKey && (
           <div className="tutor-msg assistant">
             <div className="tutor-msg-bubble typing">
               {isVi ? 'Đang suy nghĩ...' : 'Thinking...'}

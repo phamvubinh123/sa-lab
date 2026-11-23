@@ -530,33 +530,55 @@ async function callLLMStream(
   if (config.provider === 'gemini') {
     const primaryModel = config.model.trim() || 'gemini-2.5-flash';
     const staticChain = Array.from(
-      new Set([
-        primaryModel,
-        'gemini-3.8-flash',
-        'gemini-2.5-flash',
-        'gemini-2.5-flash-lite'
-      ])
-    );
+      new Set([primaryModel, 'gemini-2.5-flash'])
+    ).slice(0, 2);
 
-    const tryGeminiModel = async (modelName: string): Promise<{ ok: true; text: string } | { ok: false; status: number; msg: string }> => {
+    const fetchWithTimeout = async (url: string, init: RequestInit, timeoutMs: number) => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        return await fetch(url, { ...init, signal: controller.signal });
+      } finally {
+        clearTimeout(timer);
+      }
+    };
+
+    const tryGeminiModel = async (
+      modelName: string
+    ): Promise<{ ok: true; text: string } | { ok: false; status: number; msg: string }> => {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:streamGenerateContent?alt=sse&key=${encodeURIComponent(key)}`;
 
       const sendGemini = (includeThinkingBudget: boolean) =>
-        fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-            contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-            generationConfig: {
-              temperature: 0.4,
-              maxOutputTokens: 450,
-              ...(includeThinkingBudget ? { thinkingConfig: { thinkingBudget: 0 } } : {})
-            }
-          })
-        });
+        fetchWithTimeout(
+          url,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: systemPrompt }] },
+              contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+              generationConfig: {
+                temperature: 0.4,
+                maxOutputTokens: 450,
+                ...(includeThinkingBudget ? { thinkingConfig: { thinkingBudget: 0 } } : {})
+              }
+            })
+          },
+          8000
+        );
 
-      let response = await sendGemini(true);
+      let response: Response;
+      try {
+        response = await sendGemini(true);
+      } catch (err) {
+        const isAbort = err instanceof Error && err.name === 'AbortError';
+        return {
+          ok: false,
+          status: 408,
+          msg: isAbort ? 'Request timed out (>8s)' : 'Network error'
+        };
+      }
+
       if (response.status === 400) {
         const errBody = await response.text();
         if (errBody.toLowerCase().includes('thinking')) {
@@ -599,15 +621,17 @@ async function callLLMStream(
       const res = await tryGeminiModel(modelName);
       if (res.ok) return res.text;
       errors.push(`${modelName} (${res.status}): ${res.msg}`);
-      if (![404, 429, 500, 502, 503, 504].includes(res.status)) {
+      if (![404, 408, 429, 500, 502, 503, 504].includes(res.status)) {
         throw new Error(`Gemini (${res.status} on ${modelName}): ${res.msg}`);
       }
     }
 
-    // Auto-discover available models from Google ListModels API if static chain failed
+    // Fast 4s ListModels check -> try at most 1 active flash model
     try {
-      const listRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`
+      const listRes = await fetchWithTimeout(
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`,
+        { method: 'GET' },
+        4000
       );
       if (listRes.ok) {
         const listData = (await listRes.json()) as {
@@ -618,24 +642,19 @@ async function callLLMStream(
           .map((m) => (m.name || '').replace(/^models\//, ''))
           .filter((name) => name && !tried.has(name) && !name.includes('embedding') && !name.includes('tts'));
 
-        // Prefer flash models first
-        available.sort((a, b) => {
-          const aFlash = a.includes('flash') ? 0 : 1;
-          const bFlash = b.includes('flash') ? 0 : 1;
-          return aFlash - bFlash;
-        });
+        available.sort((a, b) => (a.includes('flash') ? 0 : 1) - (b.includes('flash') ? 0 : 1));
 
-        for (const discoveredModel of available.slice(0, 3)) {
-          const res = await tryGeminiModel(discoveredModel);
+        if (available[0]) {
+          const res = await tryGeminiModel(available[0]);
           if (res.ok) return res.text;
-          errors.push(`${discoveredModel} (${res.status})`);
+          errors.push(`${available[0]} (${res.status})`);
         }
       }
     } catch {
-      // ignore discovery error
+      // ignore discovery timeout/error
     }
 
-    throw new Error(errors.slice(0, 3).join(' | '));
+    throw new Error(errors.slice(0, 2).join(' | '));
   }
 
   if (config.provider === 'anthropic') {
