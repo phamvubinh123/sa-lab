@@ -2918,7 +2918,7 @@ input[type='range'] {
   cursor: not-allowed;
 }
 
-/* === MOBILE & TABLET RESPONSIVE ENHANCEMENTS === */
+/* === MOBILE & TABLET RESPONSIVE ENHANCEMENTS & 3-LAYER STACK === */
 html,
 body,
 .app-shell {
@@ -2926,8 +2926,150 @@ body,
   max-width: 100vw;
 }
 
+/* Critical CSS Grid fix so wide flow diagrams scroll inside their box instead of breaking page layout */
+.explorer-main-grid > *,
+.two-col-detail-grid > *,
+.sim-grid > *,
+.studio-grid-2 > *,
+.topic-detail-canvas,
+.detail-section-card,
+.sim-panel,
+.capstone-stage-card,
+.gatekeeper-section,
+.tco-studio-panel,
+.topic-header-card {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .visual-flow-canvas {
   -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
+/* Hidden on desktop (>= 1025px) */
+.mobile-layer-banner,
+.mobile-nav-backbar,
+.mobile-card-chevron,
+.mobile-topic-enter {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .mobile-layer-banner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.65rem 0.9rem;
+    background: hsl(174, 55%, 96%);
+    border: 1px solid hsla(174, 65%, 42%, 0.3);
+    border-radius: var(--radius-md);
+    margin-bottom: 0.25rem;
+  }
+
+  .mobile-layer-banner strong {
+    font-size: 0.86rem;
+    color: hsl(174, 78%, 24%);
+  }
+
+  .mobile-layer-banner span {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  .mobile-nav-backbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    margin-bottom: 0.5rem;
+  }
+
+  .mobile-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid hsla(174, 72%, 38%, 0.35);
+    background: var(--accent-teal-soft);
+    color: hsl(174, 78%, 24%);
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .mobile-crumb-tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .mobile-card-chevron,
+  .mobile-topic-enter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin-top: 0.45rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--accent-teal);
+  }
+
+  /* 3-Layer Stack Visibility & Slide Transition */
+  .explorer-wrapper.mobile-layer-pillars .explorer-main-grid {
+    display: none;
+  }
+
+  .explorer-wrapper.mobile-layer-pillars .pillars-strip {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    overflow: visible;
+    animation: layerSlideIn 0.2s ease-out;
+  }
+
+  .explorer-wrapper.mobile-layer-pillars .pillar-card-btn {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .explorer-wrapper.mobile-layer-topics .mobile-layer-banner,
+  .explorer-wrapper.mobile-layer-topics .pillars-strip,
+  .explorer-wrapper.mobile-layer-topics .topic-detail-canvas {
+    display: none;
+  }
+
+  .explorer-wrapper.mobile-layer-topics .topic-sidebar {
+    animation: layerSlideIn 0.2s ease-out;
+  }
+
+  .explorer-wrapper.mobile-layer-detail .mobile-layer-banner,
+  .explorer-wrapper.mobile-layer-detail .pillars-strip,
+  .explorer-wrapper.mobile-layer-detail .topic-sidebar {
+    display: none;
+  }
+
+  .explorer-wrapper.mobile-layer-detail .topic-detail-canvas {
+    animation: layerSlideIn 0.2s ease-out;
+  }
+}
+
+@keyframes layerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @media (max-width: 768px) {
@@ -2984,24 +3126,7 @@ body,
   }
 
   .workbench-main {
-    padding: 1rem 0.85rem 4.5rem;
-  }
-
-  /* Horizontal snap-scroll for 5 Pillars on mobile so lesson content stays visible */
-  .pillars-strip {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    gap: 0.65rem;
-    padding-bottom: 0.4rem;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .pillar-card-btn {
-    min-width: 240px;
-    max-width: 270px;
-    flex-shrink: 0;
-    scroll-snap-align: start;
+    padding: 0.85rem 0.75rem 4.5rem;
   }
 
   .topic-sidebar {
@@ -3009,9 +3134,9 @@ body,
   }
 
   .topic-nav-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.45rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
   }
 
   .topic-header-top {
@@ -3029,7 +3154,7 @@ body,
   .capstone-stage-card,
   .gatekeeper-section,
   .tco-studio-panel {
-    padding: 1rem;
+    padding: 0.95rem;
   }
 
   .axis-row {
@@ -3078,10 +3203,6 @@ body,
 @media (max-width: 480px) {
   .mode-nav-btn span {
     display: none;
-  }
-
-  .topic-nav-list {
-    grid-template-columns: 1fr;
   }
 
   .topic-subtabs {

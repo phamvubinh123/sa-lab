@@ -9,9 +9,11 @@ import {
 import { getTopicPracticeGuide } from '../data/learningGuides';
 import {
   AlertOctagon,
+  ArrowLeft,
   ArrowRight,
   BookOpen,
   CheckCircle2,
+  ChevronRight,
   Compass,
   Layers,
   Lightbulb,
@@ -33,6 +35,7 @@ interface Props {
 }
 
 type DetailTab = 'overview' | 'tradeoffs' | 'boundaries' | 'practice';
+type MobileLayer = 'pillars' | 'topics' | 'detail';
 
 export const PillarMasteryExplorer: React.FC<Props> = ({
   lang,
@@ -49,6 +52,13 @@ export const PillarMasteryExplorer: React.FC<Props> = ({
   const pillarTopics = topics.filter((t) => t.pillarId === selectedPillarId);
   const [selectedTopicId, setSelectedTopicId] = useState<string>(pillarTopics[0]?.id || topics[0].id);
   const [activeDetailTab, setActiveDetailTab] = useState<DetailTab>('overview');
+  const [mobileLayer, setMobileLayer] = useState<MobileLayer>('pillars');
+
+  const scrollTopSmooth = () => {
+    if (window.innerWidth <= 1024) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   const handleSelectPillar = (pillarId: string) => {
     setSelectedPillarId(pillarId);
@@ -58,12 +68,16 @@ export const PillarMasteryExplorer: React.FC<Props> = ({
       setActiveDetailTab('overview');
       onTopicChange?.(firstTopic.id);
     }
+    setMobileLayer('topics');
+    scrollTopSmooth();
   };
 
   const handleSelectTopic = (topicId: string) => {
     setSelectedTopicId(topicId);
     setActiveDetailTab('overview');
     onTopicChange?.(topicId);
+    setMobileLayer('detail');
+    scrollTopSmooth();
   };
 
   const currentPillar = pillars.find((p) => p.id === selectedPillarId) || pillars[0];
@@ -74,7 +88,13 @@ export const PillarMasteryExplorer: React.FC<Props> = ({
   const isMastered = masteredTopicIds.includes(currentTopic.id);
 
   return (
-    <div className="explorer-wrapper">
+    <div className={`explorer-wrapper mobile-layer-${mobileLayer}`}>
+      {/* Mobile Layer 1 Header Hint */}
+      <div className="mobile-layer-banner">
+        <strong>{isVi ? 'Bước 1/3: Chọn Trụ cột Kiến trúc' : 'Step 1/3: Choose Architecture Pillar'}</strong>
+        <span>{isVi ? 'Chạm vào 1 trụ cột để mở danh sách bài học' : 'Tap a pillar to drill into its modules'}</span>
+      </div>
+
       {/* 5 Pillars Selector Strip */}
       <div className="pillars-strip">
         {pillars.map((pillar) => {
@@ -97,6 +117,9 @@ export const PillarMasteryExplorer: React.FC<Props> = ({
               </div>
               <strong className="pillar-card-title">{pillar.title}</strong>
               <p className="pillar-card-sub">{pillar.subtitle}</p>
+              <span className="mobile-card-chevron" aria-hidden="true">
+                {isVi ? 'Mở bài học' : 'Open modules'} <ChevronRight size={15} />
+              </span>
             </button>
           );
         })}
@@ -106,6 +129,23 @@ export const PillarMasteryExplorer: React.FC<Props> = ({
       <div className="explorer-main-grid">
         {/* Left Sidebar: Topics in Selected Pillar */}
         <aside className="topic-sidebar">
+          <div className="mobile-nav-backbar">
+            <button
+              type="button"
+              className="mobile-back-btn"
+              onClick={() => {
+                setMobileLayer('pillars');
+                scrollTopSmooth();
+              }}
+            >
+              <ArrowLeft size={16} />
+              <span>{isVi ? '5 Trụ cột' : 'All Pillars'}</span>
+            </button>
+            <span className="mobile-crumb-tag">
+              {copy.pillarWord} {currentPillar.number} · {isVi ? 'Bước 2/3' : 'Step 2/3'}
+            </span>
+          </div>
+
           <div className="sidebar-header">
             <span className="eyebrow-tag">{copy.pillarWord} {currentPillar.number} {copy.modulesWord}</span>
             <h3>{currentPillar.shortTitle}</h3>
@@ -127,6 +167,9 @@ export const PillarMasteryExplorer: React.FC<Props> = ({
                   </div>
                   <strong>{topic.title}</strong>
                   <span>{topic.subtitle}</span>
+                  <span className="mobile-topic-enter">
+                    {isVi ? 'Xem chi tiết' : 'Open lesson'} <ChevronRight size={14} />
+                  </span>
                 </button>
               );
             })}
@@ -144,6 +187,23 @@ export const PillarMasteryExplorer: React.FC<Props> = ({
 
         {/* Right Detail Canvas */}
         <section className="topic-detail-canvas">
+          <div className="mobile-nav-backbar">
+            <button
+              type="button"
+              className="mobile-back-btn"
+              onClick={() => {
+                setMobileLayer('topics');
+                scrollTopSmooth();
+              }}
+            >
+              <ArrowLeft size={16} />
+              <span>
+                {copy.pillarWord} {currentPillar.number} · {isVi ? 'Danh sách bài' : 'Modules'}
+              </span>
+            </button>
+            <span className="mobile-crumb-tag">{currentTopic.code} · {isVi ? 'Chi tiết' : 'Lesson'}</span>
+          </div>
+
           {/* Compact Topic Header */}
           <div className="topic-header-card">
             <div className="topic-header-top">
