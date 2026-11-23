@@ -82,26 +82,37 @@ async function callLLMJson(config: LLMConfig, systemPrompt: string, userPrompt: 
   }
 
   if (config.provider === 'gemini') {
-    const modelName = config.model.trim() || 'gemini-2.5-flash';
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(key)}`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-        generationConfig: {
-          temperature: 0.3,
-          responseMimeType: 'application/json'
-        }
-      })
-    });
-    if (!response.ok) {
+    const primaryModel = config.model.trim() || 'gemini-3.8-flash';
+    const chain = Array.from(
+      new Set([primaryModel, 'gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-2.5-flash'])
+    );
+    let lastErr = 'Gemini API Error';
+
+    for (const modelName of chain) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(key)}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+          generationConfig: {
+            temperature: 0.3,
+            responseMimeType: 'application/json'
+          }
+        })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        return data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+      }
       const errText = await response.text();
-      throw new Error(`Gemini API Error (${response.status}): ${errText.slice(0, 200)}`);
+      lastErr = `Gemini API Error (${response.status} on ${modelName}): ${errText.slice(0, 180)}`;
+      if (![404, 429, 500, 502, 503, 504].includes(response.status)) {
+        break;
+      }
     }
-    const data = await response.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+    throw new Error(lastErr);
   }
 
   if (config.provider === 'anthropic') {
@@ -597,7 +608,10 @@ async function callLLMStream(
           },
           onChunk
         );
-        return { ok: true, text };
+        if (text.trim()) {
+          return { ok: true, text };
+        }
+        return { ok: false, status: 500, msg: 'Empty stream response' };
       }
 
       const errText = await response.text();
@@ -626,7 +640,7 @@ async function callLLMStream(
       }
     }
 
-    // Fast 4s ListModels check -> try at most 1 active flash model
+    // Fast 4s ListModels check -> sort newest version first and try top active flash model
     try {
       const listRes = await fetchWithTimeout(
         `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`,
@@ -637,12 +651,28 @@ async function callLLMStream(
         const listData = (await listRes.json()) as {
           models?: { name?: string; supportedGenerationMethods?: string[] }[];
         };
+        const getVer = (n: string) => {
+          const m = n.match(/gemini-(\d+(?:\.\d+)?)/i);
+          return m ? parseFloat(m[1]) : 0;
+        };
         const available = (listData.models || [])
           .filter((m) => m.supportedGenerationMethods?.includes('generateContent'))
           .map((m) => (m.name || '').replace(/^models\//, ''))
-          .filter((name) => name && !tried.has(name) && !name.includes('embedding') && !name.includes('tts'));
+          .filter(
+            (name) =>
+              name &&
+              !tried.has(name) &&
+              getVer(name) >= 2.5 &&
+              !name.includes('embedding') &&
+              !name.includes('tts') &&
+              !name.includes('imagen')
+          );
 
-        available.sort((a, b) => (a.includes('flash') ? 0 : 1) - (b.includes('flash') ? 0 : 1));
+        available.sort((a, b) => {
+          const verDiff = getVer(b) - getVer(a);
+          if (verDiff !== 0) return verDiff;
+          return (a.includes('flash') ? 0 : 1) - (b.includes('flash') ? 0 : 1);
+        });
 
         if (available[0]) {
           const res = await tryGeminiModel(available[0]);
