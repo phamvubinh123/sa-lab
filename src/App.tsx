@@ -9,7 +9,6 @@ import { GlossaryTooltip } from './components/GlossaryText';
 import { QuickTutorChat } from './components/QuickTutorChat';
 import {
   Award,
-  Compass,
   FileCheck2,
   Globe,
   Layers,
@@ -72,8 +71,8 @@ export function App() {
       <header className="top-workbench-header">
         <div className="header-inner">
           <div className="brand-cluster">
-            <div className="brand-mark">
-              <Compass size={22} />
+            <div className="brand-mark brand-mark-logo">
+              <img src="./sa-lab-logo.svg" alt="SA-Lab Logo" width={40} height={40} />
             </div>
             <div>
               <div className="brand-title-row">
@@ -96,7 +95,7 @@ export function App() {
             </button>
 
             <span className="app-version-pill" title="SA-Lab Current Release">
-              v1.7.0
+              v1.7.1
             </span>
 
             <div className="lang-switcher" role="group" aria-label="Language Switcher">

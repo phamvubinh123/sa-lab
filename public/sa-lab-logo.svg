@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="sa-bg" x1="6" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0D9488" />
+      <stop offset="55%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+    <linearGradient id="sa-accent" x1="20" y1="14" x2="44" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#BAE6FD" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded Architectural Shield / Hexagon -->
+  <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#sa-bg)" />
+  <rect x="6" y="6" width="52" height="52" rx="14" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="1.5" />
+
+  <!-- Subtle Blueprint Grid Lines -->
+  <path d="M16 32H48M32 16V48" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="1" stroke-dasharray="2 3" />
+
+  <!-- Architectural "A" Compass / Pillar Frame -->
+  <path
+    d="M32 14L46 47H39.5L36.3 39H27.7L24.5 47H18L32 14Z"
+    stroke="url(#sa-accent)"
+    stroke-width="2.6"
+    stroke-linejoin="round"
+    fill="#FFFFFF"
+    fill-opacity="0.08"
+  />
+  <!-- Crossbar Bridge -->
+  <path d="M26.5 34.5H37.5" stroke="#5EEAD4" stroke-width="2.6" stroke-linecap="round" />
+
+  <!-- 5-Pillar Network Nodes -->
+  <circle cx="32" cy="14" r="3" fill="#5EEAD4" />
+  <circle cx="18" cy="47" r="2.6" fill="#FFFFFF" />
+  <circle cx="46" cy="47" r="2.6" fill="#FFFFFF" />
+  <circle cx="26.5" cy="34.5" r="2.2" fill="#5EEAD4" />
+  <circle cx="37.5" cy="34.5" r="2.2" fill="#5EEAD4" />
+</svg>
