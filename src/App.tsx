@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { TOPICS } from './data/architectureData';
 import { UI_COPY, type Lang } from './data/i18n';
 import { PillarMasteryExplorer } from './components/PillarMasteryExplorer';
 import { InteractiveSimulators } from './components/InteractiveSimulators';
@@ -61,7 +60,6 @@ export function App() {
     );
   };
 
-  const masteryPercentage = Math.round((masteredTopicIds.length / TOPICS.length) * 100);
   const t = UI_COPY[lang];
 
   return (
@@ -74,12 +72,9 @@ export function App() {
             <div className="brand-mark brand-mark-logo">
               <img src="./sa-lab-logo.svg" alt="SA-Lab Logo" width={40} height={40} />
             </div>
-            <div>
-              <div className="brand-title-row">
-                <h1>{t.headerTitle}</h1>
-                <span className="version-tag">{t.headerTag}</span>
-              </div>
-              <p className="brand-tagline">{t.headerTagline}</p>
+            <div className="brand-title-row">
+              <h1>{t.headerTitle}</h1>
+              <span className="version-tag">{t.headerTag}</span>
             </div>
           </div>
 
@@ -95,7 +90,7 @@ export function App() {
             </button>
 
             <span className="app-version-pill" title="SA-Lab Current Release">
-              v1.7.2
+              v1.7.3
             </span>
 
             <div className="lang-switcher" role="group" aria-label="Language Switcher">
@@ -116,18 +111,6 @@ export function App() {
               >
                 VI
               </button>
-            </div>
-
-            <div className="mastery-hud">
-              <div className="hud-stat">
-                <span>{t.masteryLabel}</span>
-                <strong>
-                  {masteredTopicIds.length}/{TOPICS.length} {t.modulesWord} ({masteryPercentage}%)
-                </strong>
-              </div>
-              <div className="hud-progress-bar">
-                <div className="hud-progress-fill" style={{ width: `${masteryPercentage}%` }} />
-              </div>
             </div>
           </div>
         </div>
