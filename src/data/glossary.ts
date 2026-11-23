@@ -378,6 +378,43 @@ export const SA_GLOSSARY: GlossaryEntry[] = [
     fullName: 'Recovery Point Objective',
     explanation: 'Lượng dữ liệu tối đa chấp nhận bị mất (tính theo thời gian, vd: 5 phút) khi xảy ra thảm họa.',
     caseSensitive: true
+  },
+  {
+    term: 'Semantic Cache',
+    fullName: 'Vector Similarity Response Cache',
+    explanation: 'Bộ nhớ đệm lưu câu trả lời LLM theo độ tương đồng ngữ nghĩa (cosine > 0.92). Bắt buộc gắn User RBAC Group Hash vào cache key để tránh lộ dữ liệu giữa các cấp quyền.'
+  },
+  {
+    term: 'TPM',
+    fullName: 'Tokens Per Minute',
+    explanation: 'Hạn mức số token tối đa được gọi trong mỗi phút của nhà cung cấp LLM; vượt ngưỡng này sẽ bị trả lỗi HTTP 429 Rate Limit.',
+    caseSensitive: true
+  },
+  {
+    term: 'RPM',
+    fullName: 'Requests Per Minute',
+    explanation: 'Hạn mức số request tối đa mỗi phút tới API LLM.',
+    caseSensitive: true
+  },
+  {
+    term: 'Modular Monolith',
+    fullName: 'Kiến trúc Nguyên khối Phân module Rõ ràng',
+    explanation: 'Triển khai chung 1 tiến trình ($0 phí network nội bộ) nhưng tách ranh giới code chặt chẽ theo domain; lý tưởng cho đội ngũ <30 kỹ sư trước khi cần tách Microservices.'
+  },
+  {
+    term: 'Data Egress',
+    fullName: 'Cloud Outbound / Cross-AZ Data Transfer Cost',
+    explanation: 'Chi phí truyền dữ liệu ra ngoài Internet, giữa các Region hoặc giữa các Availability Zone (Cross-AZ) — thường âm thầm chiếm 30–40% hóa đơn Cloud.'
+  },
+  {
+    term: 'NAT Gateway',
+    fullName: 'Network Address Translation Gateway',
+    explanation: 'Cổng cho phép server trong mạng riêng đi ra Internet/API ngoài; đẩy lưu lượng lớn tới S3/Blob qua NAT Gateway rất tốn tiền thay vì dùng VPC Endpoint miễn phí.'
+  },
+  {
+    term: 'VPC Endpoint',
+    fullName: 'Private Cloud Storage/Service Endpoint',
+    explanation: 'Đường kết nối nội bộ trực tiếp tới Object Storage (S3/Blob) trong cùng Region mà không đi qua NAT Gateway hay Internet, tiết kiệm đáng kể chi phí Data Egress.'
   }
 ];
 

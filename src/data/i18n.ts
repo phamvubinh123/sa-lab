@@ -539,9 +539,10 @@ const PILLARS_VI: Record<string, Partial<ArchitecturePillar>> = {
   'pillar-3': {
     title: 'Kiến trúc AI & Tích hợp Doanh nghiệp',
     shortTitle: 'Khối 3: AI & FinOps',
-    subtitle: 'Model Router (SLM vs. LLM), Hybrid RAG (BM25 + Vector + Reranker), RAG vs. Finetuning vs. Long Context, MCP & Guardrails',
+    subtitle: 'Model Router (SLM vs. LLM), Semantic Caching, Multi-LLM Fallback, Hybrid RAG (BM25 + Vector + Reranker), MCP & Guardrails',
     coreFocus: [
       'AI Gateway điều hướng 70–80% tác vụ nhẹ sang SLM (giá 1/50) & 20–30% sang Frontier LLM',
+      'Semantic Caching theo nhóm quyền RBAC (cosine > 0.92, <50ms) & Multi-LLM Fallback (429/5xx)',
       'Hybrid Search (BM25 + Vector + Reranker) trị bệnh "Mù từ khóa kỹ thuật"',
       'Nguyên tắc vàng Chip Huyen: "Finetuning cho Form, RAG cho Facts"',
       'Chuẩn hóa công cụ qua MCP, Input/Output Guardrails & đánh giá RAGAS'
@@ -561,11 +562,12 @@ const PILLARS_VI: Record<string, Partial<ArchitecturePillar>> = {
   'pillar-5': {
     title: 'Kỹ năng Kiến trúc sư & Chuyển giao',
     shortTitle: 'Khối 5: Delivery & Quản trị',
-    subtitle: '7 Câu hỏi Kiểm trực SA, Viết ADR sắc bén, Mô hình TCO/ROI 3 năm & Bảo vệ giải pháp trước Hội đồng CxO',
+    subtitle: '7 Câu hỏi Kiểm trực SA, Modular Monolith vs. Microservices FinOps, Kiểm soát Egress, ADR & Bảo vệ trước CxO',
     coreFocus: [
       '7-Layer SA Decision Checklist kiểm duyệt Edge, Data, Async, Resilience, SAP, AI & Zero Trust',
+      'Chọn đúng quy mô: Modular Monolith (<30 dev) vs. Microservices & kiểm soát Cross-AZ/Cloud Egress',
       'Soạn thảo ADR theo chuẩn Docs-as-Code nêu rõ Đánh đổi & Hệ quả tiêu cực',
-      'Phân tích TCO 36 tháng & kiểm thử độ nhạy khi lưu lượng tăng gấp 3 lần',
+      'Phân tích TCO 36 tháng, vòng đời lưu trữ (Hot/Warm/Cold) & độ nhạy khi tải tăng 3x',
       'Nghệ thuật thuyết phục CFO, CISO, Head of SRE và Business VP'
     ]
   }
@@ -620,6 +622,12 @@ const TOPICS_VI: Record<string, Partial<ArchitectureTopic>> = {
     goldenRule: 'Ưu tiên Workflow xác định (Deterministic) khi các bước đã rõ ràng; chỉ dùng Autonomous Agent cho lập luận động. Chuẩn hóa tool qua MCP và bắt buộc Human-in-the-Loop cho lệnh Ghi/Xóa.',
     businessContext: 'Khi nâng cấp từ Chatbot chỉ-đọc sang AI Agent có thể tạo đơn hàng SAP hoặc sửa CRM, nếu thiếu ranh giới MCP, Guardrails và bộ kiểm thử RAGAS, Agent có thể lặp vô tận đốt tiền Token hoặc sửa sai dữ liệu.'
   },
+  'p3-ai-gateway-cache-fallback': {
+    title: 'AI Gateway: Semantic Caching, Multi-LLM Fallback & Token FinOps',
+    subtitle: 'Cắt giảm 30–40% chi phí AI (<50ms) bằng Semantic Cache theo RBAC và chống sập 429/5xx qua Multi-LLM Fallback',
+    goldenRule: 'Không bao giờ gọi LLM hai lần cho cùng một ý định ngữ nghĩa — dùng Semantic Caching (cosine > 0.92) phân mảnh theo phạm vi quyền RBAC của người dùng, và luôn cấu hình Multi-Provider Fallback để loại bỏ rủi ro phụ thuộc 1 nhà cung cấp.',
+    businessContext: 'Ở quy mô 1,5 triệu câu hỏi/tháng, 35% câu hỏi nhân viên lặp lại cùng ý định (chỉ khác cách diễn đạt). Gọi Frontier LLM lặp lại đốt hàng chục nghìn USD/tháng, còn phụ thuộc 1 vùng Azure OpenAI dễ dính bão lỗi 429 Rate Limit hoặc sập vùng.'
+  },
   'p4-m365-rbac-zero-trust': {
     title: 'Kế thừa Quyền M365/Azure (RBAC/ABAC) & Zero-Trust RAG',
     subtitle: 'Chống lộ dữ liệu nội bộ trong RAG bằng Entra ID On-Behalf-Of (OBO) và Security Trimming',
@@ -637,6 +645,12 @@ const TOPICS_VI: Record<string, Partial<ArchitectureTopic>> = {
     subtitle: 'Thẩm định thiết kế có hệ thống, lưu trữ quyết định kiến trúc và bảo vệ ROI trước Hội đồng CxO',
     goldenRule: 'Kiến trúc chỉ có giá trị khi làm rõ Đánh đổi, Khả thi Day-2 và TCO 3 năm. Không bao giờ bước vào họp ARB khi chưa vượt qua 7 Câu hỏi Kiểm trực SA.',
     businessContext: 'Nhiều bản thiết kế kỹ thuật xuất sắc vẫn bị bác bỏ vì Kiến trúc sư không chứng minh được TCO 36 tháng với CFO, không thuyết phục được CISO về phân quyền Zero Trust hoặc không giải tỏa được nỗi lo trực sự cố của Head of SRE.'
+  },
+  'p5-finops-monolith-egress': {
+    title: 'FinOps & Kinh tế Cloud: Modular Monolith vs. Microservices & Kiểm soát Data Egress',
+    subtitle: 'Chọn đúng quy mô kiến trúc cho tải 1x vs. 10x, tránh Distributed Monolith và triệt tiêu chi phí Cross-AZ/Egress ngầm',
+    goldenRule: 'Hãy bắt đầu bằng Modular Monolith cho đến khi quy mô đội ngũ (>30 kỹ sư) hoặc nút thắt scale độc lập thực sự đòi hỏi Microservices. Luôn giám sát Cloud Data Egress và lưu lượng Cross-AZ — chúng âm thầm đốt 40% ngân sách Cloud.',
+    businessContext: 'Một team 18 kỹ sư tách cổng ERP nội bộ thành 22 Microservices chạy Kubernetes đa vùng. Sau 6 tháng, chi phí Cloud tăng gấp 3 ($42k -> $135k/tháng) do phí Cross-AZ NAT Gateway & Data Egress chiếm 40% hóa đơn, trong khi tốc độ ra tính năng giảm 60%.'
   }
 };
 
@@ -677,18 +691,18 @@ const GATEKEEPER_VI: Record<string, Partial<GatekeeperItem>> = {
     architectRemediation: 'Dùng SAP ODP/SLT CDC vào Canonical Model, hợp nhất thực thể qua MDM và áp dụng Data Contract + Lineage đầu-cuối.'
   },
   'gate-6': {
-    layer: '6. Tầng AI Engineering, Model Router & Hybrid RAG',
+    layer: '6. Tầng AI Engineering, Model Router, Semantic Cache & Hybrid RAG',
     pillarBadge: 'Khối 3',
-    question: 'Hệ thống có đang lãng phí gọi Frontier LLM cho câu hỏi đơn giản thay vì Model Router 70–80% SLM, và đã dùng Hybrid Search (BM25 + Vector + Reranker) đúng quy tắc "Finetuning cho Form, RAG cho Facts" chưa?',
-    redLineFailure: 'Chi phí Token đội lên gấp 50 lần; Vector thuần túy mù mã lỗi kỹ thuật/SKU; Finetuning làm đóng băng tri thức và mất Citations.',
-    architectRemediation: 'Đặt AI Gateway đẩy 75% tải sang SLM (Phi-4/Llama-3-8B), dùng BM25 + Vector + Reranker trích dẫn 100% nguồn và chuẩn hóa tool qua MCP + RAGAS.'
+    question: 'Hệ thống đã dùng Model Router 70–80% SLM, Semantic Cache phân mảnh theo User Security Group Hash (cosine > 0.92), Multi-LLM Fallback (429/5xx) và Hybrid Search (BM25 + Vector + Reranker) chưa?',
+    redLineFailure: 'Chi phí Token đội 50x; Cross-User Semantic Cache Leak lộ dữ liệu sếp; sập dịch vụ khi 1 hãng AI dính 429; Vector thuần túy mù mã SKU.',
+    architectRemediation: 'Đặt AI Gateway đẩy 75% tải sang SLM, gắn User Security Group Hash vào mọi Semantic Cache key, bật Multi-Provider Fallback, dùng BM25 + Vector + Reranker và MCP + RAGAS.'
   },
   'gate-7': {
-    layer: '7. Tầng Zero Trust, M365 RBAC & AI Audit',
-    pillarBadge: 'Khối 4',
-    question: 'Pipeline RAG đã truyền định danh user qua Entra ID OBO + Hybrid Security Trimming, giữ PII trong vùng Chủ quyền/BYOK và ghi Nhật ký Kiểm toán WORM bất biến chưa?',
-    redLineFailure: 'Nhân viên hỏi AI lấy được tài liệu lương/M&A mật trên SharePoint; rò rỉ PII xuyên biên giới vi phạm pháp luật.',
-    architectRemediation: 'Bắt buộc Entra ID OBO + lọc ACL lúc Index kết hợp kiểm tra Top-K lúc truy vấn, tokenize PII nội địa và ghi log WORM.'
+    layer: '7. Tầng Zero Trust, Cloud FinOps, Egress & Right-Sizing',
+    pillarBadge: 'Khối 4 & 5',
+    question: 'AI đã truyền Entra ID OBO + BYOK/WORM Audit chưa, và ADR đã chứng minh TCO chọn Modular Monolith (<30 dev) vs. Microservices (1x vs 10x) kèm kiểm soát Cross-AZ Egress & lưu trữ Hot/Warm/Cold chưa?',
+    redLineFailure: 'Lộ tài liệu M365 mật qua RAG; tách Microservices quá sớm thành Distributed Monolith; Cross-AZ Egress & giữ file trên SSD đắt đỏ đốt 40% ngân sách Cloud.',
+    architectRemediation: 'Bắt buộc Entra ID OBO + Hybrid Security Trimming + WORM Audit; ưu tiên Modular Monolith nếu <30 dev; dùng Same-AZ VPC Endpoints và tự động chuyển tầng Hot->Warm->Cold.'
   }
 };
 

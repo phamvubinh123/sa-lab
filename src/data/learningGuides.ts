@@ -642,6 +642,116 @@ const GUIDES_VI: Record<string, TopicPracticeGuide> = {
       commonTrap:
         'Cố tranh cãi bằng lý thuyết kỹ thuật thuần túy ("best practice là phải có") thay vì định lượng thiệt hại kinh doanh nếu không có.'
     }
+  },
+  'p3-ai-gateway-cache-fallback': {
+    topicId: 'p3-ai-gateway-cache-fallback',
+    analogyTitle: 'Sổ ghi câu trả lời mẫu theo từng cấp bậc (Semantic Cache) & Đường dây dự phòng (Fallback)',
+    analogyStory:
+      'Hãy tưởng tượng 1.000 nhân viên đều hỏi trợ lý AI về "Chính sách công tác phí" với các cách diễn đạt hơi khác nhau. Semantic Cache giống cuốn sổ chép sẵn câu trả lời chuẩn: ai hỏi ý giống >92% (cosine > 0.92) thì trả lời ngay trong <50ms với $0 tiền token! NHƯNG bắt buộc phải chia sổ theo cấp bậc quyền (RBAC Group Hash) — nếu không, thực tập sinh hỏi câu gần giống sếp có thể nhận nhầm câu trả lời chứa số liệu lương/M&A mật! Còn Multi-LLM Fallback giống việc có sẵn 2 nhà mạng dự phòng khi mạng chính bị nghẽn 429.',
+    plainSteps: [
+      'Bước 1 — Chặn gọi lặp bằng Semantic Cache: Lưu embedding + câu trả lời trong Redis Vector; nếu độ tương đồng cosine > 0.92 thì trả về ngay (<50ms, $0 token), tiết kiệm 30–40% chi phí AI.',
+      'Bước 2 — Cách ly Cache theo quyền RBAC: Mọi key của Semantic Cache BẮT BUỘC gắn kèm User Security Group Hash để không bao giờ rò rỉ câu trả lời mật giữa các cấp nhân sự.',
+      'Bước 3 — Chuyển mạch đa hãng (Multi-LLM Fallback): Bọc Circuit Breaker quanh Azure OpenAI; khi gặp lỗi 429 Rate Limit hoặc 5xx, tự động chuyển sang Anthropic Claude hoặc Self-hosted SLM.'
+    ],
+    keyTerms: ['Semantic Cache', 'TPM', 'RPM', 'RBAC', 'Circuit Breaker', 'SLM'],
+    scenarioQuestion: {
+      context:
+        'Chatbot nội bộ bật Semantic Cache toàn cục (Global Redis Vector) không phân biệt người dùng. Hôm qua Giám đốc Tài chính vừa hỏi về "Kế hoạch cắt giảm ngân sách Q4". Sáng nay, một nhân viên bình thường gõ "Tình hình ngân sách Q4 thế nào?" và nhận được nguyên văn câu trả lời mật của Giám đốc.',
+      question: 'Lỗi kiến trúc nào đã xảy ra và cách khắc phục triệt để là gì?',
+      options: [
+        {
+          id: 'a',
+          text: 'Lỗi Cross-User Semantic Cache Leak. Phải gắn User Security Group Hash vào mọi cache key và loại trừ các câu hỏi chứa nhãn dữ liệu mật/PII.',
+          isCorrect: true,
+          explanation:
+            'Chính xác! Semantic Cache bắt buộc phải phân mảnh theo phạm vi quyền (RBAC scope) của người dùng, tuyệt đối không dùng chung một cache phẳng cho cả công ty.'
+        },
+        {
+          id: 'b',
+          text: 'Nâng ngưỡng cosine similarity từ 0.92 lên 0.99 để khó trúng cache hơn.',
+          isCorrect: false,
+          explanation:
+            'Sai! Nâng lên 0.99 vừa làm mất hiệu quả tiết kiệm 30–40% của Semantic Cache, vừa không giải quyết được lỗ hổng bảo mật khi 2 người khác quyền hỏi cùng 1 câu!'
+        },
+        {
+          id: 'c',
+          text: 'Tắt hẳn Semantic Cache và gọi thẳng 100% lên Frontier LLM.',
+          isCorrect: false,
+          explanation:
+            'Quá lãng phí về mặt FinOps! Chỉ cần phân mảnh cache theo RBAC Group Hash là vừa an toàn vừa giữ được 30–40% tiết kiệm chi phí.'
+        }
+      ]
+    },
+    debateChallenge: {
+      challengerRole: 'AI Platform Lead',
+      statement:
+        '"Mình ký hợp đồng Azure OpenAI Enterprise rồi, cần gì làm Multi-LLM Fallback sang Anthropic hay Self-hosted SLM cho tốn công viết adapter?"',
+      hints: [
+        'Hạn mức TPM/RPM của 1 vùng Cloud vẫn có thể chạm trần 429 Rate Limit vào giờ cao điểm',
+        'Sự cố hạ tầng vùng (Regional 5xx) của 1 hãng sẽ làm 100% AI Copilot tê liệt',
+        'AI Gateway chuẩn hóa sẵn adapter nên chi phí tích hợp Fallback rất nhỏ so với SLA đạt được'
+      ],
+      expectedKeywords: ['429', 'rate limit', 'outage', 'fallback', 'circuit breaker', 'single', 'slm', 'sla'],
+      modelRebuttal:
+        'Dù dùng gói Enterprise, mỗi vùng Cloud vẫn có giới hạn TPM/RPM cứng và hoàn toàn có thể gặp sự cố 5xx hoặc bão 429 vào giờ cao điểm. Nếu chỉ phụ thuộc 1 nhà cung cấp, cả hệ thống AI của doanh nghiệp sẽ "tắt đèn" khi hãng đó lỗi. Đặt Multi-LLM Fallback (Azure OpenAI -> Anthropic Claude -> Self-Hosted SLM) qua AI Gateway chỉ tốn thêm một lớp adapter mỏng nhưng đảm bảo SLA 99.95%+ và tránh rủi ro khóa chặt vào 1 vendor.',
+      commonTrap:
+        'Tin rằng "Cloud lớn thì không bao giờ sập hay bị 429 Rate Limit", đến lúc cao điểm mới thấy toàn bộ ứng dụng bị treo.'
+    }
+  },
+  'p5-finops-monolith-egress': {
+    topicId: 'p5-finops-monolith-egress',
+    analogyTitle: 'Ở nhà nguyên căn gọn gàng (Modular Monolith) vs. Thuê 25 căn phòng cách nhau 10km (Distributed Monolith)',
+    analogyStory:
+      'Một đội 15 kỹ sư mà tách app thành 25 Microservices giống như 1 gia đình nhỏ đi thuê 25 căn phòng ở khắp thành phố: mỗi lần nói chuyện với nhau phải đi qua đường cao tốc (Network Latency + phí Cross-AZ Data Egress), tiền xăng xe (Cloud Bill) tăng gấp 3 lần mà làm việc gì cũng chậm! Modular Monolith giữ mọi người trong cùng 1 tòa nhà có vách ngăn rõ ràng ($0 phí mạng nội bộ). Chỉ khi đội >30 người hoặc có bộ phận cần scale riêng mới tách phòng đó ra ngoài.',
+    plainSteps: [
+      'Bước 1 — Bắt đầu bằng Modular Monolith: Với team <30 kỹ sư, tách module rõ ràng trong code nhưng chạy chung 1 deployable để đạt tốc độ dev cao nhất và $0 phí network nội bộ.',
+      'Bước 2 — Chặn "thuế ngầm" Data Egress & Cross-AZ: Đặt các dịch vụ nói chuyện nhiều trong cùng Availability Zone (Topology-Aware Routing) và dùng VPC Endpoint thay cho NAT Gateway.',
+      'Bước 3 — Phân tầng vòng đời dữ liệu (Hot/Warm/Cold): Dữ liệu mới 0–30 ngày để SSD (Hot); 30 ngày–1 năm đẩy sang Object Storage (Warm, rẻ 1/5); 1–7 năm đẩy sang Archive (Cold, rẻ 1/20).'
+    ],
+    keyTerms: ['Modular Monolith', 'Data Egress', 'NAT Gateway', 'VPC Endpoint', 'TCO', 'OPEX'],
+    scenarioQuestion: {
+      context:
+        'Team 18 kỹ sư tách hệ thống nội bộ thành 24 Microservices trên Kubernetes 3 vùng AZ. Hóa đơn Cloud tăng từ $40k lên $130k/tháng (40% là phí Cross-AZ & NAT Gateway), mỗi lần ra tính năng mới phải deploy cùng lúc 12 service.',
+      question: 'Giải pháp FinOps & Kiến trúc nào chuẩn xác nhất?',
+      options: [
+        {
+          id: 'a',
+          text: 'Hợp nhất dần các service liên kết chặt về Modular Monolith, bật Topology-Aware Routing (Same-AZ) + VPC Endpoint và phân tầng lưu trữ Hot/Warm/Cold.',
+          isCorrect: true,
+          explanation:
+            'Chính xác! Đây là trường hợp kinh điển của Distributed Monolith. Thu gọn về Modular Monolith + kiểm soát Egress/VPC Endpoint giúp giảm mạnh TCO và tăng lại tốc độ ra tính năng.'
+        },
+        {
+          id: 'b',
+          text: 'Mua thêm công cụ Service Mesh (Istio) phức tạp hơn để theo dõi 24 microservices.',
+          isCorrect: false,
+          explanation:
+            'Sai! Thêm Service Mesh cho team 18 người càng tăng chi phí CPU/RAM và độ phức tạp vận hành mà không giải quyết được vấn đề tách service quá sớm.'
+        },
+        {
+          id: 'c',
+          text: 'Chuyển toàn bộ 24 microservices sang AWS Lambda Serverless để khỏi lo quản lý Kubernetes.',
+          isCorrect: false,
+          explanation:
+            'Sai! Chuyển Distributed Monolith sang Serverless không hết sự phụ thuộc chéo, thậm chí khi tải tăng 10x thì chi phí per-invocation và API Gateway còn đắt hơn nữa.'
+        }
+      ]
+    },
+    debateChallenge: {
+      challengerRole: 'Lead Architect (thích Microservices)',
+      statement:
+        '"Công ty công nghệ nào xịn bây giờ cũng làm Microservices ngay từ ngày đầu! Làm Modular Monolith nhìn quê lắm, sau này muốn scale lên 10x thì sao?"',
+      hints: [
+        'Conway’s Law: 15–20 kỹ sư không đủ người để vận hành độc lập 25 microservices (Distributed Monolith)',
+        'Phí ẩn Cross-AZ Data Egress, Kubernetes overhead và Observability ngốn 30–40% Cloud budget',
+        'Modular Monolith có ranh giới module sạch nên luôn có thể tách riêng đúng 1–2 module nóng khi tải thực sự lên 10x'
+      ],
+      expectedKeywords: ['modular monolith', 'distributed monolith', '30', 'egress', 'cross-az', 'tco', 'tách', 'velocity'],
+      modelRebuttal:
+        'Tách Microservices cho team dưới 30 kỹ sư thường tạo ra "Distributed Monolith" — gánh 100% chi phí mạng, Kubernetes, Cross-AZ Data Egress (đốt 30–40% hóa đơn Cloud) nhưng vẫn phải deploy chung nhau, làm tốc độ team tụt thê thảm. Modular Monolith với ranh giới domain sạch cho chi phí TCO thấp nhất ở tải 1x, $0 egress nội bộ, và khi tải lên 10x chỉ cần tách đúng 1–2 module nút thắt ra thành Microservice độc lập. Kiến trúc giỏi là chọn đúng quy mô (Right-Sizing), không phải chạy theo trend.',
+      commonTrap:
+        'Làm "Resume-Driven Architecture" (chọn Microservices cho đẹp CV) thay vì tối ưu TCO và tốc độ giao hàng thực tế cho doanh nghiệp.'
+    }
   }
 };
 
@@ -1258,6 +1368,116 @@ const GUIDES_EN: Record<string, TopicPracticeGuide> = {
         'One percent downtime sounds tiny, but outages rarely happen at 3 AM—they strike during peak Flash Sales or month-end closing when 40% of quarterly revenue is processed. Bulkheads and Circuit Breakers act like fire insurance: a small fraction of 36-month TCO that protects millions in revenue and brand trust. Meanwhile, ADRs preserve architectural reasoning in Git so key-person turnover never costs us months of re-learning.',
       commonTrap:
         'Defending architecture with vague "best practice" slogans instead of quantifying business revenue at risk.'
+    }
+  },
+  'p3-ai-gateway-cache-fallback': {
+    topicId: 'p3-ai-gateway-cache-fallback',
+    analogyTitle: 'Role-Separated FAQ Binder (Semantic Cache) & Backup Carrier Lines (Fallback)',
+    analogyStory:
+      'Imagine 1,000 employees asking the AI Assistant about "Travel Expense Policy" using slightly different wording. Semantic Caching acts like a smart FAQ binder: if a new question has >92% semantic similarity (cosine > 0.92), return the cached answer in <50ms for $0 token cost! CRITICAL RULE: separate binders by RBAC Security Group Hash—otherwise an intern asking a similar question could receive the CFO\'s confidential budget answer. Multi-LLM Fallback acts like backup internet carriers when your primary provider hits 429 Rate Limits.',
+    plainSteps: [
+      'Step 1 — Stop Paying Twice (Semantic Cache): Store prompt embeddings + answers in Redis Vector; hits above cosine > 0.92 return in <50ms ($0 tokens), cutting inference bills 30–40%.',
+      'Step 2 — Partition by RBAC Scope: Prefix every Semantic Cache key with the User Security Group Hash so answers never leak across permission levels.',
+      'Step 3 — Multi-Provider Resilience (Fallback): Wrap Azure OpenAI in a Circuit Breaker; on HTTP 429/5xx, fail over automatically to Anthropic Claude or a Self-Hosted SLM.'
+    ],
+    keyTerms: ['Semantic Cache', 'TPM', 'RPM', 'RBAC', 'Circuit Breaker', 'SLM'],
+    scenarioQuestion: {
+      context:
+        'An enterprise chatbot uses a global Redis Semantic Cache without user permission scoping. Yesterday the CFO asked about "Q4 cost-cutting targets." Today a junior employee asks "How is our Q4 budget looking?" and receives the CFO\'s confidential summary.',
+      question: 'What failed and how do you fix it?',
+      options: [
+        {
+          id: 'a',
+          text: 'Cross-User Semantic Cache Leak. Partition every cache lookup by User Security Group Hash and exclude confidential/PII-labeled prompts.',
+          isCorrect: true,
+          explanation:
+            'Spot on! Semantic Cache keys must always be scoped by RBAC Security Group Hash—never share a flat global cache across privilege tiers.'
+        },
+        {
+          id: 'b',
+          text: 'Raise the cosine similarity threshold from 0.92 to 0.99.',
+          isCorrect: false,
+          explanation:
+            'Incorrect! Raising to 0.99 destroys the 30–40% cost savings and still leaks confidential answers if two users with different permissions ask identical questions.'
+        },
+        {
+          id: 'c',
+          text: 'Disable Semantic Caching completely and call the Frontier LLM 100% of the time.',
+          isCorrect: false,
+          explanation:
+            'Wasteful FinOps! Partitioning the cache by RBAC Group Hash keeps both 100% security isolation and 30–40% token savings.'
+        }
+      ]
+    },
+    debateChallenge: {
+      challengerRole: 'AI Platform Lead',
+      statement:
+        '"We already have an Enterprise Azure OpenAI contract—why bother building Multi-LLM Fallback to Anthropic or Self-Hosted SLMs?"',
+      hints: [
+        'Single cloud regions still enforce hard TPM/RPM quotas (HTTP 429 Rate Limits)',
+        'Regional 5xx outages knock out 100% of AI Copilot functionality if there is no cross-vendor failover',
+        'AI Gateways standardize adapters cleanly for 99.95%+ SLA protection'
+      ],
+      expectedKeywords: ['429', 'rate limit', 'outage', 'fallback', 'circuit breaker', 'single', 'slm', 'sla'],
+      modelRebuttal:
+        'Even enterprise agreements have hard regional TPM/RPM ceilings and occasional 5xx outages. Relying on a single vendor means your entire AI Copilot goes dark during peak rate-limit storms. Adding Multi-LLM Fallback (Azure OpenAI -> Anthropic Claude -> Self-Hosted SLM) inside the AI Gateway requires a thin adapter layer but guarantees 99.95%+ uptime and eliminates single-vendor lock-in.',
+      commonTrap:
+        'Assuming an enterprise cloud contract guarantees zero 429 Rate Limits or regional outages.'
+    }
+  },
+  'p5-finops-monolith-egress': {
+    topicId: 'p5-finops-monolith-egress',
+    analogyTitle: 'One Well-Organized House (Modular Monolith) vs. 25 Scattered Apartments (Distributed Monolith)',
+    analogyStory:
+      'An 18-engineer team splitting an app into 25 microservices is like one small family renting 25 apartments across town: every conversation requires driving on the highway (Network Latency + Cross-AZ Data Egress fees), tripling the monthly bill while slowing everything down. A Modular Monolith keeps bounded modules in one deployable ($0 internal egress). Only extract a separate microservice when team size (>30 devs) or an independent scaling bottleneck demands it.',
+    plainSteps: [
+      'Step 1 — Start with a Modular Monolith: Under 30 engineers, keep strict code boundaries inside one deployable for peak velocity and $0 internal network egress.',
+      'Step 2 — Stop Silent Egress Burn: Enforce Same-AZ Topology-Aware Routing and Private VPC Endpoints instead of routing storage traffic through NAT Gateways.',
+      'Step 3 — Automate Storage Lifecycle (Hot/Warm/Cold): Keep 0–30d data on Primary SSD (Hot), move 30d–1y to Object Storage (Warm, 1/5th cost), and 1–7y to Archive (Cold, 1/20th cost).'
+    ],
+    keyTerms: ['Modular Monolith', 'Data Egress', 'NAT Gateway', 'VPC Endpoint', 'TCO', 'OPEX'],
+    scenarioQuestion: {
+      context:
+        'An 18-engineer team runs 24 Kubernetes microservices across 3 AZs. Cloud spend jumped from $40k to $130k/month (40% is Cross-AZ & NAT Gateway Egress), and every release requires deploying 12 services together.',
+      question: 'What is the right FinOps and architectural correction?',
+      options: [
+        {
+          id: 'a',
+          text: 'Consolidate tightly coupled services back into a Modular Monolith, enable Same-AZ Routing + VPC Endpoints, and apply Hot/Warm/Cold storage tiering.',
+          isCorrect: true,
+          explanation:
+            'Correct! This is a textbook Distributed Monolith. Right-sizing to a Modular Monolith and eliminating Cross-AZ/NAT egress slashes TCO and restores delivery velocity.'
+        },
+        {
+          id: 'b',
+          text: 'Add a full Istio Service Mesh to better observe the 24 microservices.',
+          isCorrect: false,
+          explanation:
+            'Incorrect! Adding a Service Mesh for an 18-person team increases CPU/memory overhead without fixing premature service splitting.'
+        },
+        {
+          id: 'c',
+          text: 'Rewrite all 24 microservices into AWS Lambda Serverless functions.',
+          isCorrect: false,
+          explanation:
+            'Incorrect! Moving a Distributed Monolith to Serverless preserves the coupling and often increases 10x scale costs via per-invocation and API Gateway egress fees.'
+        }
+      ]
+    },
+    debateChallenge: {
+      challengerRole: 'Lead Architect (Microservices Advocate)',
+      statement:
+        '"All top tech companies start with Microservices on Day 1! A Modular Monolith looks old-fashioned—how will we ever scale 10x later?"',
+      hints: [
+        'Conway’s Law: <30 engineers cannot independently own 25 microservices (Distributed Monolith)',
+        'Cross-AZ Data Egress, K8s overhead, and observability silently burn 30–40% of cloud budgets',
+        'Clean module boundaries make extracting 1–2 hot bottlenecks later fast and surgical'
+      ],
+      expectedKeywords: ['modular monolith', 'distributed monolith', '30', 'egress', 'cross-az', 'tco', 'extract', 'velocity'],
+      modelRebuttal:
+        'Splitting into microservices with fewer than 30 engineers almost always creates a Distributed Monolith—paying 100% of the network, Kubernetes, and Cross-AZ Data Egress tax (30–40% of the cloud bill) while still deploying in lockstep. A Modular Monolith with strict domain boundaries gives the lowest 1x TCO, $0 internal egress, and lets us surgically extract just the 1–2 hot modules when 10x bottlenecks actually appear. Great architecture is Right-Sizing, not resume-driven hype.',
+      commonTrap:
+        'Choosing Microservices for CV appeal ("Resume-Driven Architecture") instead of optimizing 36-month TCO and team velocity.'
     }
   }
 };

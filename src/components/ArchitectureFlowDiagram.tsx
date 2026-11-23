@@ -481,6 +481,101 @@ export const TopicFlowDiagram: React.FC<{ topicId: string }> = ({ topicId }) => 
         </div>
       );
 
+    case 'p3-ai-gateway-cache-fallback':
+      return (
+        <div className="visual-flow-canvas">
+          <div className="flow-row">
+            <FlowNode
+              icon={<KeyRound size={18} />}
+              title="Prompt + RBAC Hash"
+              subtitle="Entra Security Group Scope"
+              tone="slate"
+            />
+            <FlowArrow label="Cosine > 0.92?" tone="normal" />
+            <FlowNode
+              icon={<Zap size={18} />}
+              title="Semantic Cache (Redis)"
+              subtitle="Scoped by RBAC Group Hash"
+              badge="HIT <50ms · $0"
+              tone="emerald"
+            />
+            <div className="flow-branches-col">
+              <div className="flow-branch-line">
+                <FlowArrow label="Miss → Primary" tone="normal" />
+                <FlowNode
+                  icon={<Bot size={18} />}
+                  title="Azure OpenAI"
+                  subtitle="429 / 5xx Circuit Breaker"
+                  tone="sky"
+                />
+              </div>
+              <div className="flow-branch-line">
+                <FlowArrow label="Fallback 1" tone="amber" />
+                <FlowNode
+                  icon={<ShieldCheck size={18} />}
+                  title="Anthropic Claude"
+                  subtitle="Cross-Vendor Failover"
+                  tone="teal"
+                />
+              </div>
+              <div className="flow-branch-line">
+                <FlowArrow label="Fallback 2" tone="safe" />
+                <FlowNode
+                  icon={<Cpu size={18} />}
+                  title="Self-Hosted SLM"
+                  subtitle="vLLM / Phi-4 Sovereign"
+                  badge="99.95% SLA"
+                  tone="emerald"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
+    case 'p5-finops-monolith-egress':
+      return (
+        <div className="visual-flow-canvas">
+          <div className="flow-row">
+            <FlowNode
+              icon={<Layers size={18} />}
+              title="Modular Monolith"
+              subtitle="<30 Devs · In-Process Calls"
+              badge="$0 Internal Egress"
+              tone="emerald"
+            />
+            <FlowArrow label="Hot Scale?" tone="amber" />
+            <FlowNode
+              icon={<Split size={18} />}
+              title="Targeted Extraction"
+              subtitle="Extract Only Bottleneck"
+              badge="Same-AZ VPC"
+              tone="teal"
+            />
+            <FlowArrow label="Lifecycle Tier" tone="safe" />
+            <div className="flow-branches-col">
+              <div className="flow-branch-line">
+                <FlowNode
+                  icon={<Database size={18} />}
+                  title="Hot Tier (0–30d)"
+                  subtitle="Primary SQL SSD"
+                  tone="amber"
+                />
+              </div>
+              <div className="flow-branch-line">
+                <FlowNode
+                  icon={<Server size={18} />}
+                  title="Warm / Cold (30d–7y)"
+                  subtitle="Object + Archive · VPC Endpoint"
+                  badge="-60% Storage"
+                  tone="sky"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
     case 'p5-gatekeeper-adr-tco':
     default:
       return (
