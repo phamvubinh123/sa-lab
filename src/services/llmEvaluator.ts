@@ -464,3 +464,146 @@ Return ONLY valid JSON:
     usedLiveLLM: false
   };
 }
+
+export interface TutorChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  mode?: 'live-llm' | 'built-in';
+}
+
+async function callLLMText(
+  config: LLMConfig,
+  systemPrompt: string,
+  messages: { role: 'user' | 'assistant'; content: string }[]
+): Promise<string> {
+  const key = config.apiKey.trim();
+  if (!key) {
+    throw new Error('NO_API_KEY');
+  }
+
+  if (config.provider === 'gemini') {
+    const modelName = config.model.trim() || 'gemini-2.5-flash';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(key)}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        contents: messages.map((m) => ({
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: m.content }]
+        })),
+        generationConfig: { temperature: 0.45 }
+      })
+    });
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Gemini API Error (${response.status}): ${errText.slice(0, 180)}`);
+    }
+    const data = await response.json();
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  }
+
+  if (config.provider === 'anthropic') {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: config.model.trim() || 'claude-3-5-sonnet-latest',
+        max_tokens: 900,
+        system: systemPrompt,
+        messages: messages.map((m) => ({ role: m.role, content: m.content }))
+      })
+    });
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Anthropic API Error (${response.status}): ${errText.slice(0, 180)}`);
+    }
+    const data = await response.json();
+    return data?.content?.[0]?.text || '';
+  }
+
+  const baseUrl =
+    config.provider === 'custom' && config.customBaseUrl?.trim()
+      ? config.customBaseUrl.trim().replace(/\/$/, '')
+      : 'https://api.openai.com/v1';
+
+  const response = await fetch(`${baseUrl}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${key}`
+    },
+    body: JSON.stringify({
+      model: config.model.trim() || 'gpt-4o-mini',
+      temperature: 0.45,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...messages.map((m) => ({ role: m.role, content: m.content }))
+      ]
+    })
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`OpenAI-Compatible API Error (${response.status}): ${errText.slice(0, 180)}`);
+  }
+  const data = await response.json();
+  return data?.choices?.[0]?.message?.content || '';
+}
+
+export async function askSaTutor(params: {
+  question: string;
+  history: TutorChatMessage[];
+  contextSummary: string;
+  lang: 'en' | 'vi';
+  config: LLMConfig;
+}): Promise<{ reply: string; usedLiveLLM: boolean; errorNote?: string }> {
+  const { question, history, contextSummary, lang, config } = params;
+
+  const systemPrompt =
+    lang === 'vi'
+      ? `Bạn là Senior Solutions Architect Mentor cực kỳ thân thiện, chuyên giải thích kiến trúc hệ thống cho người mới dễ hiểu nhất.
+Quy tắc trả lời:
+- Trả lời bằng tiếng Việt tự nhiên, ngắn gọn (3–6 câu hoặc gạch đầu dòng), đi thẳng vào trọng tâm.
+- Luôn dùng 1 ví dụ đời thường dễ hình dung nếu người dùng hỏi về thuật ngữ hoặc cơ chế.
+- Nếu người dùng hỏi so sánh hay phản biện, nêu rõ sự đánh đổi (Trade-off) và khi nào nên/không nên dùng.
+Ngữ cảnh người dùng đang xem trên SA-Lab:
+${contextSummary}`
+      : `You are a friendly Senior Solutions Architect Mentor helping a beginner clearly understand Enterprise & AI Architecture.
+Rules:
+- Keep answers concise (3–6 sentences or crisp bullets), clear, and jargon-light.
+- Use a quick real-world analogy when explaining technical terms or patterns.
+- Highlight practical trade-offs and when NOT to use a pattern.
+Current SA-Lab page context:
+${contextSummary}`;
+
+  if (config.apiKey.trim()) {
+    try {
+      const recent = history.slice(-6).map((m) => ({ role: m.role, content: m.content }));
+      const reply = await callLLMText(config, systemPrompt, [
+        ...recent,
+        { role: 'user', content: question }
+      ]);
+      if (reply.trim()) {
+        return { reply: reply.trim(), usedLiveLLM: true };
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'API error';
+      return {
+        reply: '',
+        usedLiveLLM: false,
+        errorNote: msg
+      };
+    }
+  }
+
+  return { reply: '', usedLiveLLM: false };
+}
+

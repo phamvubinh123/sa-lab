@@ -29,11 +29,17 @@ interface Props {
   lang: Lang;
   masteredTopicIds: string[];
   onToggleMastered: (topicId: string) => void;
+  onTopicChange?: (topicId: string) => void;
 }
 
 type DetailTab = 'overview' | 'tradeoffs' | 'boundaries' | 'practice';
 
-export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds, onToggleMastered }) => {
+export const PillarMasteryExplorer: React.FC<Props> = ({
+  lang,
+  masteredTopicIds,
+  onToggleMastered,
+  onTopicChange
+}) => {
   const pillars = getLocalizedPillars(lang);
   const topics = getLocalizedTopics(lang);
   const copy = UI_COPY[lang].explorer;
@@ -50,12 +56,14 @@ export const PillarMasteryExplorer: React.FC<Props> = ({ lang, masteredTopicIds,
     if (firstTopic) {
       setSelectedTopicId(firstTopic.id);
       setActiveDetailTab('overview');
+      onTopicChange?.(firstTopic.id);
     }
   };
 
   const handleSelectTopic = (topicId: string) => {
     setSelectedTopicId(topicId);
     setActiveDetailTab('overview');
+    onTopicChange?.(topicId);
   };
 
   const currentPillar = pillars.find((p) => p.id === selectedPillarId) || pillars[0];

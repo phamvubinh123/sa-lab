@@ -6,12 +6,14 @@ import { InteractiveSimulators } from './components/InteractiveSimulators';
 import { CapstoneArena } from './components/CapstoneArena';
 import { AdrAndBoardroomStudio } from './components/AdrAndBoardroomStudio';
 import { GlossaryTooltip } from './components/GlossaryText';
+import { QuickTutorChat } from './components/QuickTutorChat';
 import {
   Award,
   Compass,
   FileCheck2,
   Globe,
   Layers,
+  MessageCircleQuestion,
   Sliders
 } from 'lucide-react';
 
@@ -19,6 +21,8 @@ type WorkbenchTab = 'pillars' | 'simulators' | 'capstone' | 'adr-boardroom';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<WorkbenchTab>('pillars');
+  const [activeTopicId, setActiveTopicId] = useState<string>('p1-edge-gateway');
+  const [isTutorOpen, setIsTutorOpen] = useState<boolean>(false);
   const [lang, setLang] = useState<Lang>(() => {
     try {
       const saved = localStorage.getItem('salab_lang');
@@ -62,7 +66,7 @@ export function App() {
   const t = UI_COPY[lang];
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${isTutorOpen ? 'tutor-open' : ''}`}>
       <GlossaryTooltip />
       {/* Top Enterprise Workbench Header */}
       <header className="top-workbench-header">
@@ -81,8 +85,18 @@ export function App() {
           </div>
 
           <div className="header-right-cluster">
+            <button
+              id="btn-toggle-tutor"
+              type="button"
+              className={`tutor-header-btn ${isTutorOpen ? 'active' : ''}`}
+              onClick={() => setIsTutorOpen((prev) => !prev)}
+            >
+              <MessageCircleQuestion size={15} />
+              <span>{lang === 'vi' ? 'Hỏi nhanh Tutor' : 'Ask SA Tutor'}</span>
+            </button>
+
             <span className="app-version-pill" title="SA-Lab Current Release">
-              v1.5.0
+              v1.6.0
             </span>
 
             <div className="lang-switcher" role="group" aria-label="Language Switcher">
@@ -178,6 +192,7 @@ export function App() {
             lang={lang}
             masteredTopicIds={masteredTopicIds}
             onToggleMastered={handleToggleMastered}
+            onTopicChange={setActiveTopicId}
           />
         )}
         {activeTab === 'simulators' && <InteractiveSimulators lang={lang} />}
@@ -195,6 +210,28 @@ export function App() {
           </span>
         </div>
       </footer>
+
+      {/* Floating Quick-Ask Button when side chat is closed */}
+      {!isTutorOpen && (
+        <button
+          type="button"
+          className="tutor-fab-btn"
+          onClick={() => setIsTutorOpen(true)}
+          aria-label="Open SA Tutor Chat"
+        >
+          <MessageCircleQuestion size={20} />
+          <span>{lang === 'vi' ? 'Hỏi nhanh' : 'Ask Tutor'}</span>
+        </button>
+      )}
+
+      {/* Dockable Right-Side SA Tutor Chat */}
+      <QuickTutorChat
+        isOpen={isTutorOpen}
+        onClose={() => setIsTutorOpen(false)}
+        lang={lang}
+        activeTab={activeTab}
+        activeTopicId={activeTopicId}
+      />
     </div>
   );
 }
