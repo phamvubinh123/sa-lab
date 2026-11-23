@@ -591,12 +591,8 @@ async function callLLMStream(
       }
 
       if (response.status === 400) {
-        const errBody = await response.text();
-        if (errBody.toLowerCase().includes('thinking')) {
-          response = await sendGemini(false);
-        } else {
-          return { ok: false, status: 400, msg: errBody.slice(0, 140) };
-        }
+        // Gemini 3.x models may reject thinkingBudget with generic "INVALID_ARGUMENT"
+        response = await sendGemini(false);
       }
 
       if (response.ok) {
