@@ -2918,6 +2918,194 @@ input[type='range'] {
   cursor: not-allowed;
 }
 
+/* === MOBILE & TABLET RESPONSIVE ENHANCEMENTS === */
+html,
+body,
+.app-shell {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+.visual-flow-canvas {
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .header-inner {
+    padding: 0.85rem 1rem 0.65rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .brand-title-row {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .brand-title-row h1 {
+    font-size: 1.08rem;
+  }
+
+  .brand-tagline {
+    font-size: 0.76rem;
+  }
+
+  .header-right-cluster {
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .mastery-hud {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .primary-mode-nav {
+    padding: 0 1rem 0.75rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.45rem;
+  }
+
+  .mode-nav-btn {
+    padding: 0.55rem 0.65rem;
+    gap: 0.45rem;
+  }
+
+  .mode-nav-btn strong {
+    font-size: 0.78rem;
+    line-height: 1.2;
+  }
+
+  .mode-nav-btn span {
+    font-size: 0.68rem;
+    line-height: 1.25;
+  }
+
+  .workbench-main {
+    padding: 1rem 0.85rem 4.5rem;
+  }
+
+  /* Horizontal snap-scroll for 5 Pillars on mobile so lesson content stays visible */
+  .pillars-strip {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 0.65rem;
+    padding-bottom: 0.4rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .pillar-card-btn {
+    min-width: 240px;
+    max-width: 270px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+
+  .topic-sidebar {
+    padding: 0.9rem;
+  }
+
+  .topic-nav-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.45rem;
+  }
+
+  .topic-header-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topic-header-top h2 {
+    font-size: 1.15rem;
+  }
+
+  .topic-header-card,
+  .detail-section-card,
+  .sim-panel,
+  .capstone-stage-card,
+  .gatekeeper-section,
+  .tco-studio-panel {
+    padding: 1rem;
+  }
+
+  .axis-row {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .radio-group-grid,
+  .two-col-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .step-footer-nav {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .step-footer-nav button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .tutor-side-drawer {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    border-left: none;
+  }
+
+  .tutor-fab-btn {
+    right: 14px;
+    bottom: 14px;
+    padding: 0.65rem 0.95rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .mode-nav-btn span {
+    display: none;
+  }
+
+  .topic-nav-list {
+    grid-template-columns: 1fr;
+  }
+
+  .topic-subtabs {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+  }
+
+  .topic-subtab-btn {
+    font-size: 0.74rem;
+    padding: 0.55rem 0.45rem;
+  }
+
+  .kpi-grid-4,
+  .capstone-scoreboard,
+  .stage-stepper {
+    grid-template-columns: 1fr;
+  }
+
+  .tutor-header-btn span {
+    display: none;
+  }
+}
+
+
 
 
 

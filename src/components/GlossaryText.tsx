@@ -131,15 +131,37 @@ export const GlossaryTooltip: React.FC = () => {
       }
     };
 
+    const handleClick = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-term-key]');
+      if (!target) {
+        if (currentEl) {
+          currentEl = null;
+          setTip((prev) => ({ ...prev, visible: false }));
+        }
+        return;
+      }
+
+      const key = target.getAttribute('data-term-key');
+      const entry = key ? GLOSSARY_MAP[key] : undefined;
+      if (!entry) return;
+
+      const rect = target.getBoundingClientRect();
+      currentEl = target;
+      const { x, y } = computePos(rect.left, rect.bottom);
+      setTip({ visible: true, entry, x, y });
+    };
+
     document.addEventListener('mouseover', handleMouseOver);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseout', handleMouseOut);
+    document.addEventListener('click', handleClick);
     window.addEventListener('scroll', handleScroll, true);
 
     return () => {
       document.removeEventListener('mouseover', handleMouseOver);
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseout', handleMouseOut);
+      document.removeEventListener('click', handleClick);
       window.removeEventListener('scroll', handleScroll, true);
     };
   }, []);
