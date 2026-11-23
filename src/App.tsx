@@ -90,7 +90,7 @@ export function App() {
             </button>
 
             <span className="app-version-pill" title="SA-Lab Current Release">
-              v1.7.5
+              v1.7.6
             </span>
 
             <div className="lang-switcher" role="group" aria-label="Language Switcher">

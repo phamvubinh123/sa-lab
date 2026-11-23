@@ -529,18 +529,16 @@ async function callLLMStream(
 
   if (config.provider === 'gemini') {
     const primaryModel = config.model.trim() || 'gemini-2.5-flash';
-    const fallbackChain = Array.from(
+    const staticChain = Array.from(
       new Set([
         primaryModel,
+        'gemini-3.8-flash',
         'gemini-2.5-flash',
-        'gemini-2.5-flash-lite',
-        'gemini-2.0-flash'
+        'gemini-2.5-flash-lite'
       ])
     );
 
-    let lastError = 'Gemini API Error';
-
-    for (const modelName of fallbackChain) {
+    const tryGeminiModel = async (modelName: string): Promise<{ ok: true; text: string } | { ok: false; status: number; msg: string }> => {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:streamGenerateContent?alt=sse&key=${encodeURIComponent(key)}`;
 
       const sendGemini = (includeThinkingBudget: boolean) =>
@@ -564,13 +562,12 @@ async function callLLMStream(
         if (errBody.toLowerCase().includes('thinking')) {
           response = await sendGemini(false);
         } else {
-          lastError = `Gemini API Error (400): ${errBody.slice(0, 180)}`;
-          break;
+          return { ok: false, status: 400, msg: errBody.slice(0, 140) };
         }
       }
 
       if (response.ok) {
-        return readSseStream(
+        const text = await readSseStream(
           response,
           (chunk) => {
             const c = chunk as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
@@ -578,10 +575,11 @@ async function callLLMStream(
           },
           onChunk
         );
+        return { ok: true, text };
       }
 
       const errText = await response.text();
-      let cleanMsg = errText.slice(0, 140);
+      let cleanMsg = errText.slice(0, 120);
       try {
         const parsedErr = JSON.parse(errText);
         if (parsedErr?.error?.message) {
@@ -590,15 +588,54 @@ async function callLLMStream(
       } catch {
         // keep slice
       }
-      lastError = `Gemini (${response.status} on ${modelName}): ${cleanMsg}`;
+      return { ok: false, status: response.status, msg: cleanMsg };
+    };
 
-      // Retry next fallback model on transient 429/5xx overload or 404 model unavailability
-      if (![404, 429, 500, 502, 503, 504].includes(response.status)) {
-        break;
+    const errors: string[] = [];
+    const tried = new Set<string>();
+
+    for (const modelName of staticChain) {
+      tried.add(modelName);
+      const res = await tryGeminiModel(modelName);
+      if (res.ok) return res.text;
+      errors.push(`${modelName} (${res.status}): ${res.msg}`);
+      if (![404, 429, 500, 502, 503, 504].includes(res.status)) {
+        throw new Error(`Gemini (${res.status} on ${modelName}): ${res.msg}`);
       }
     }
 
-    throw new Error(lastError);
+    // Auto-discover available models from Google ListModels API if static chain failed
+    try {
+      const listRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`
+      );
+      if (listRes.ok) {
+        const listData = (await listRes.json()) as {
+          models?: { name?: string; supportedGenerationMethods?: string[] }[];
+        };
+        const available = (listData.models || [])
+          .filter((m) => m.supportedGenerationMethods?.includes('generateContent'))
+          .map((m) => (m.name || '').replace(/^models\//, ''))
+          .filter((name) => name && !tried.has(name) && !name.includes('embedding') && !name.includes('tts'));
+
+        // Prefer flash models first
+        available.sort((a, b) => {
+          const aFlash = a.includes('flash') ? 0 : 1;
+          const bFlash = b.includes('flash') ? 0 : 1;
+          return aFlash - bFlash;
+        });
+
+        for (const discoveredModel of available.slice(0, 3)) {
+          const res = await tryGeminiModel(discoveredModel);
+          if (res.ok) return res.text;
+          errors.push(`${discoveredModel} (${res.status})`);
+        }
+      }
+    } catch {
+      // ignore discovery error
+    }
+
+    throw new Error(errors.slice(0, 3).join(' | '));
   }
 
   if (config.provider === 'anthropic') {
