@@ -97,10 +97,11 @@ export const PILLARS: ArchitecturePillar[] = [
     number: 3,
     title: 'AI Architecture & Enterprise Integration',
     shortTitle: 'Pillar 3: Enterprise AI & FinOps',
-    subtitle: 'Model Router (SLM vs. LLM), Hybrid RAG (BM25 + Vector + Reranker), RAG vs. Finetuning vs. Long Context, Agentic MCP & Guardrails',
+    subtitle: 'Model Router (SLM vs. LLM), Semantic Caching, Multi-LLM Fallback, Hybrid RAG (BM25 + Vector + Reranker), Agentic MCP & Guardrails',
     accentColor: '#f59e0b',
     coreFocus: [
       'AI Gateway routing 70-80% traffic to SLMs (1/50th cost) & 20-30% to Frontier LLMs',
+      'RBAC-Partitioned Semantic Caching (cosine > 0.92, <50ms) & Multi-LLM Fallback (429/5xx)',
       'Hybrid Search (BM25 + Vector + Reranker) curing Technical Code Blindness',
       'Chip Huyen Rule: "Finetuning is for Form, RAG is for Facts"',
       'Model Context Protocol (MCP) boundaries, Guardrails & RAGAS Evaluation'
@@ -125,12 +126,13 @@ export const PILLARS: ArchitecturePillar[] = [
     number: 5,
     title: 'Architect Leadership & Delivery',
     shortTitle: 'Pillar 5: Delivery & Governance',
-    subtitle: '7-Layer SA Decision Gatekeeper, High-Impact ADRs, 3-Year TCO/ROI Modeling & Executive CxO Boardroom Defense',
+    subtitle: '7-Layer SA Decision Gatekeeper, Modular Monolith vs. Microservices FinOps, Data Egress Control, ADRs & CxO Boardroom Defense',
     accentColor: '#14b8a6',
     coreFocus: [
       '7-Question SA Decision Checklist across Edge, Data, Async, Resilience, Enterprise Data, AI & Zero Trust',
+      'Right-Sizing Architecture: Modular Monolith (<30 devs) vs. Microservices & Cross-AZ/Cloud Egress Control',
       'Structured ADR authoring capturing Context, Trade-offs & Reversibility',
-      '36-Month TCO & FinOps Sensitivity Analysis (CapEx, OpEx, Token & SAP costs)',
+      '36-Month TCO & FinOps Sensitivity Analysis (CapEx, OpEx, Storage Tiering & Token costs)',
       'Defending architecture trade-offs against CFO, CISO, SRE & Business VPs'
     ]
   }
@@ -972,6 +974,120 @@ export const TOPICS: ArchitectureTopic[] = [
       ]
     }
   },
+  {
+    id: 'p3-ai-gateway-cache-fallback',
+    pillarId: 'pillar-3',
+    code: 'P3.3',
+    title: 'AI Gateway: Semantic Caching, Multi-LLM Fallback & Token FinOps',
+    subtitle: 'Cutting 30–40% LLM inference spend (<50ms latency) via RBAC-partitioned Semantic Caching and surviving 429/5xx outages via Multi-Provider Fallback',
+    goldenRule: 'Never hit an LLM twice for the same semantic intent—use Semantic Caching (cosine > 0.92) partitioned by user RBAC scope, and always configure Multi-Provider Fallback to eliminate single-vendor outages.',
+    businessContext: 'At 1.5M monthly enterprise queries, 35% of employee questions share identical intent phrased slightly differently (e.g., "How do I claim travel?" vs. "Travel expense policy?"). Calling Frontier LLMs repeatedly wastes $15k+/month and adds 2–4s latency, while relying on a single Azure OpenAI region exposes the business to 429 Rate Limit storms and vendor outages.',
+    asciiFlow: `[ User Prompt + Entra ID Security Group Hash ]
+                      │
+                      ▼
+        [ AI Gateway Semantic Cache (Redis / Vector) ]
+         ├─► Cosine > 0.92 & SAME RBAC Hash ──► HIT (<50ms, $0 Token Cost!)
+         └─► Cache MISS ──► [ Multi-LLM Circuit Breaker & Fallback Router ]
+                              ├─► Primary: Azure OpenAI (429 / 5xx?)
+                              ├─► Fallback 1: Anthropic Claude (Cross-Vendor)
+                              └─► Fallback 2: Self-Hosted SLM (VLLM / Phi-4)`,
+    antiPatterns: [
+      {
+        name: 'Cross-User Semantic Cache Leak (Global Cache Key)',
+        symptom: 'Caching prompt embeddings globally without hashing the user’s RBAC/Security Group scope into the cache key.',
+        businessImpact: 'CRITICAL SECURITY BREACH: A junior employee asks a similar question to the CFO and receives a cached answer containing confidential M&A or payroll figures.',
+        remediation: 'Partition every Semantic Cache lookup by User Security Group Hash (namespace: `tenant:rbac_group_hash`) AND exclude prompts flagged with high-sensitivity Purview/PII labels.'
+      },
+      {
+        name: 'Single-Vendor LLM Lock-in (No 429/5xx Fallback)',
+        symptom: 'Application code hardcodes one Azure OpenAI endpoint; during peak hours or regional outages, users hit HTTP 429/503 errors.',
+        businessImpact: 'Enterprise AI Copilot goes completely dark during month-end peaks, destroying user adoption and SLA.',
+        remediation: 'Configure an AI Gateway with Circuit Breakers and automatic Multi-Provider Fallback (e.g., Azure OpenAI -> Anthropic Claude -> Self-Hosted SLM) plus normalized prompt/schema adapters.'
+      }
+    ],
+    boundaries: [
+      {
+        zone: 'Semantic Cache Layer (Redis Vector)',
+        responsibility: 'Embed incoming prompt, filter strictly by User RBAC Group Hash, and return cached response if cosine similarity > 0.92 in <50ms.',
+        mustNeverCross: 'Must NEVER serve a cached response across different RBAC permission groups or cache real-time transactional queries (e.g., "my current leave balance").'
+      },
+      {
+        zone: 'Multi-LLM Fallback Router',
+        responsibility: 'Track per-provider TPM/RPM quotas, trip Circuit Breakers on HTTP 429/5xx, and fail over seamlessly across providers.',
+        mustNeverCross: 'Must NEVER retry synchronously in an unbounded loop on 429; use exponential backoff with immediate cross-provider failover.'
+      }
+    ],
+    day2Ops: [
+      {
+        failureMode: 'Primary LLM Provider hits HTTP 429 Quota Exhaustion or Regional 503 Outage',
+        blastRadius: '100% of uncached AI requests fail or hang for 30+ seconds.',
+        mitigationMechanism: 'AI Gateway trips provider Circuit Breaker in <5ms, shifts traffic to Secondary Provider (Anthropic Claude) or Self-Hosted SLM, and serves Semantic Cache hits (<50ms) unaffected.',
+        keyMetric: 'Semantic Cache Hit Ratio (>=30%), Cache Hit Latency (<50ms P95), Multi-LLM Failover Time (<200ms)'
+      }
+    ],
+    governanceRules: [
+      'Enforce `User Security Group Hash` partitioning on 100% of Semantic Cache keys—never share a global vector cache across RBAC tiers.',
+      'Set strict cosine similarity threshold (>= 0.92) and TTL invalidation tied to source document updates.',
+      'Maintain tested fallback routes across at least 2 distinct LLM providers plus a self-hosted SLM tier.'
+    ],
+    optionsComparison: {
+      optionALabel: 'RBAC Semantic Cache + Multi-LLM Gateway',
+      optionBLabel: 'Direct Single-Vendor LLM API Calls',
+      optionCLabel: 'Global Unpartitioned Exact-Match Cache',
+      options: [
+        {
+          id: 'rbac-semantic-gateway',
+          name: 'RBAC-Partitioned Semantic Cache + Multi-LLM Fallback',
+          tagline: 'Redis Vector cache (cosine > 0.92) scoped by Security Group Hash + automated 429/5xx cross-vendor failover.',
+          pros: [
+            'Cuts LLM inference costs by 30–40% and drops repeat-intent latency to <50ms',
+            'Zero Cross-User RBAC leakage via Security Group Hash partitioning',
+            '99.95%+ AI availability during single-provider 429 or regional outages'
+          ],
+          cons: [
+            'Requires embedding model latency (~10–15ms) on cache lookup',
+            'Need cache invalidation webhooks when underlying policy documents change'
+          ],
+          whenToUse: 'Default production standard for all Enterprise AI Copilots above 100k queries/month.',
+          costProfile: 'Low',
+          opsComplexity: 'Medium'
+        },
+        {
+          id: 'direct-single-llm',
+          name: 'Direct Single-Vendor LLM Calls (No Cache, No Fallback)',
+          tagline: 'Every user prompt calls a single cloud LLM endpoint directly.',
+          pros: ['Zero gateway infrastructure to manage'],
+          cons: [
+            'Pays 100% token cost repeatedly for identical FAQ/policy intents',
+            'Complete outage whenever vendor hits 429 Rate Limit or 5xx'
+          ],
+          whenToUse: 'Early internal POCs only.',
+          costProfile: 'High',
+          opsComplexity: 'Low'
+        },
+        {
+          id: 'global-exact-cache',
+          name: 'Global Unpartitioned Exact-Match Cache',
+          tagline: 'Caches exact string matches globally in Redis without RBAC scope or semantic matching.',
+          pros: ['Simple key-value lookup'],
+          cons: [
+            'Low hit rate (<5%) because phrasing varies slightly',
+            'Severe Cross-User RBAC leak risk if confidential answers are cached globally'
+          ],
+          whenToUse: 'Strictly public, non-authenticated FAQ bots only.',
+          costProfile: 'Low',
+          opsComplexity: 'Low'
+        }
+      ],
+      axes: [
+        { metric: 'Token Cost Reduction', optionA: 92, optionB: 10, optionC: 35 },
+        { metric: 'Repeat Query Latency (<50ms)', optionA: 94, optionB: 15, optionC: 90 },
+        { metric: 'Outage & 429 Resilience', optionA: 96, optionB: 20, optionC: 25 },
+        { metric: 'RBAC Cache Isolation Safety', optionA: 97, optionB: 90, optionC: 15 },
+        { metric: 'Operational Simplicity', optionA: 72, optionB: 96, optionC: 85 }
+      ]
+    }
+  },
 
   // ================= PILLAR 4 =================
   {
@@ -1285,6 +1401,121 @@ export const TOPICS: ArchitectureTopic[] = [
         { metric: 'Audit & Handover Value', optionA: 98, optionB: 10, optionC: 70 }
       ]
     }
+  },
+  {
+    id: 'p5-finops-monolith-egress',
+    pillarId: 'pillar-5',
+    code: 'P5.2',
+    title: 'FinOps & Cloud Economics: Modular Monolith vs. Microservices & Data Egress Control',
+    subtitle: 'Right-sizing architecture for 1x vs. 10x scale, avoiding Distributed Monoliths, and eliminating silent Cross-AZ & Cloud Egress burn',
+    goldenRule: 'Start with a Modular Monolith until team size (>30 engineers) or independent scaling bottlenecks justify Microservices. Watch Cloud Data Egress and Cross-AZ traffic—they silently burn 40% of cloud budgets.',
+    businessContext: 'An 18-engineer product team splits an internal ERP portal into 22 Kubernetes Microservices across 3 Availability Zones and 2 cloud regions. Within 6 months, Cloud OpEx triples ($42k/mo -> $135k/mo): 40% of the bill comes from unmonitored Cross-AZ NAT Gateway & Cross-Cloud Data Egress charges, while feature velocity drops 60% due to Distributed Monolith coupling.',
+    asciiFlow: `[ <30 Engineers: Modular Monolith ] ──► Single Deployable · In-Process Calls ($0 Network Egress)
+        │
+        ├─► Hot Compute / Independent Scale Bottleneck? ──► Extract ONLY Targeted Microservice
+        │
+        └─► Cloud Cost & Data Lifecycle Tiering:
+              ├─► Hot Tier (0–30d): NVMe / Primary SQL SSD (High IOPS)
+              ├─► Warm Tier (30d–1y): Object Storage Standard (S3/Blob, 1/5th cost)
+              └─► Cold Tier (1y–7y): Glacier / Archive Storage (1/20th cost, Same-Region VPC Endpoint)`,
+    antiPatterns: [
+      {
+        name: 'Distributed Monolith (Microservices Premature Split)',
+        symptom: 'A <30-engineer team splits into 20+ microservices that still share a database or must all be deployed together for every feature.',
+        businessImpact: 'You pay 100% of the distributed systems tax (network latency, Kubernetes overhead, distributed tracing) with zero independent deployability.',
+        remediation: 'Consolidate into a Modular Monolith with strict internal module boundaries (bounded contexts); extract a microservice ONLY when a module has an independent scaling or compliance need.'
+      },
+      {
+        name: 'Unbounded Cross-AZ / Cross-Cloud Data Egress',
+        symptom: 'Chatty microservices, Kafka replication, and uncached S3/Blob downloads cross Availability Zones and NAT Gateways continuously.',
+        businessImpact: 'Silent 30–40% Cloud OpEx tax ($0.01–$0.09/GB) that scales linearly with traffic and destroys 36-month TCO.',
+        remediation: 'Enforce Topology-Aware Routing (keep traffic within the same AZ), use Private VPC Endpoints instead of NAT Gateways, and co-locate compute with data.'
+      }
+    ],
+    boundaries: [
+      {
+        zone: 'Compute & Service Granularity Boundary',
+        responsibility: 'Match architecture topology to Conway’s Law (<30 devs -> Modular Monolith; >30 devs / distinct SLA -> Targeted Microservices).',
+        mustNeverCross: 'Must NEVER split into microservices purely for "resume-driven development" without proving an independent scaling or team-autonomy bottleneck.'
+      },
+      {
+        zone: 'Storage Lifecycle & Network Egress Boundary',
+        responsibility: 'Automatically tier data across Hot SSD (0–30d), Warm Object Storage (30d–1y), and Cold Archive (1–7y) while keeping traffic inside same-region Private Endpoints.',
+        mustNeverCross: 'Must NEVER store 5-year audit logs or raw PDFs on expensive Primary SQL SSDs or route internal object-storage traffic over public NAT Gateways.'
+      }
+    ],
+    day2Ops: [
+      {
+        failureMode: 'Monthly Cloud Bill Spikes 2.5x During 10x Traffic Growth Without Revenue Proportionality',
+        blastRadius: 'Unit economics turn negative; CFO freezes new AI and product initiatives.',
+        mitigationMechanism: 'Enable FinOps cost-allocation tags per domain, enforce AZ-local routing + VPC Gateway Endpoints, automate Hot->Warm->Cold storage lifecycle policies, and right-size idle K8s nodes.',
+        keyMetric: 'Cross-AZ / Egress % of Total Bill (<10%), Cost per Transaction (1x vs. 10x Scale), Storage Tiering Savings (>=60%)'
+      }
+    ],
+    governanceRules: [
+      'Every Microservices proposal for teams under 30 engineers must pass a "Modular Monolith vs. Microservices TCO Justification" in the ADR.',
+      'Mandate Same-Region VPC Endpoints and Topology-Aware Routing for high-throughput data/AI pipelines.',
+      'Enforce automated Hot -> Warm -> Cold storage lifecycle rules on all logs, backups, and document archives.'
+    ],
+    optionsComparison: {
+      optionALabel: 'Modular Monolith + Targeted Services + Lifecycle Tiering',
+      optionBLabel: 'Premature 25-Microservice K8s Mesh',
+      optionCLabel: '100% Serverless / Managed Primitives',
+      options: [
+        {
+          id: 'modular-monolith-finops',
+          name: 'Modular Monolith + Targeted Extraction + FinOps Tiering',
+          tagline: 'In-process bounded contexts for <30 devs, extracting only hot bottlenecks, with AZ-local routing and Hot/Warm/Cold storage.',
+          pros: [
+            'Lowest TCO at 1x and predictable linear scaling at 10x ($0 internal network egress)',
+            'Fastest developer velocity with zero distributed-debugging tax',
+            'Cuts storage and egress bills by 40–60% via lifecycle tiering and VPC endpoints'
+          ],
+          cons: [
+            'Requires disciplined code-level module boundaries (e.g. ArchUnit / package isolation)',
+            'Entire monolith scales as one unit until hot modules are extracted'
+          ],
+          whenToUse: 'Default starting architecture for teams <30 engineers and 90% of enterprise internal platforms.',
+          costProfile: 'Low',
+          opsComplexity: 'Low'
+        },
+        {
+          id: 'premature-microservices',
+          name: 'Premature Distributed Microservices (25+ Services)',
+          tagline: 'Full Kubernetes + Service Mesh + Cross-AZ RPC for a small engineering team.',
+          pros: ['Theoretical independent scaling per service'],
+          cons: [
+            '3–5x higher Cloud TCO from K8s control planes, Cross-AZ egress, and observability',
+            '60% slower delivery when services degrade into a Distributed Monolith'
+          ],
+          whenToUse: 'Only justified at >30–50 engineers with genuinely decoupled domains and scaling profiles.',
+          costProfile: 'High',
+          opsComplexity: 'High'
+        },
+        {
+          id: 'serverless-managed',
+          name: 'Serverless / Managed Primitives (Lambda / Functions)',
+          tagline: 'Pay-per-invocation functions and managed queues with zero idle server cost.',
+          pros: [
+            'Near-zero cost at 1x low/spiky traffic and minimal server patching'
+          ],
+          cons: [
+            'At steady 10x high-throughput scale, per-invocation & API Gateway egress costs can exceed containers by 2–3x',
+            'Cold starts and execution duration limits for heavy workloads'
+          ],
+          whenToUse: 'Event-driven glue workloads, cron jobs, and unpredictable spiky APIs.',
+          costProfile: 'Variable',
+          opsComplexity: 'Medium'
+        }
+      ],
+      axes: [
+        { metric: '1x Scale TCO Efficiency', optionA: 94, optionB: 25, optionC: 92 },
+        { metric: '10x Scale TCO Predictability', optionA: 90, optionB: 45, optionC: 55 },
+        { metric: 'Cross-AZ & Egress Control', optionA: 96, optionB: 30, optionC: 70 },
+        { metric: 'Team Velocity (<30 Devs)', optionA: 95, optionB: 35, optionC: 82 },
+        { metric: 'Future Extraction Readiness', optionA: 88, optionB: 90, optionC: 65 }
+      ]
+    }
   }
 ];
 
@@ -1340,19 +1571,19 @@ export const SA_DECISION_CHECKLIST: GatekeeperItem[] = [
   },
   {
     id: 'gate-6',
-    layer: '6. AI Engineering, Model Router & Hybrid RAG Layer',
+    layer: '6. AI Engineering, Model Router, Semantic Cache & Hybrid RAG Layer',
     pillarBadge: 'Pillar 3',
-    question: 'Are we wasting budget calling Frontier LLMs for simple queries instead of a 70-80% SLM Model Router, and have we implemented Hybrid Search (BM25 + Vector + Reranker) following "Finetuning for Form, RAG for Facts"?',
-    redLineFailure: '50x Token TCO blowout; pure Vector Search fails on exact SKUs/Error codes (Technical Code Blindness); Finetuning hallucinates outdated facts without citations.',
-    architectRemediation: 'Deploy an AI Gateway routing 75% traffic to SLMs (Phi-4/Llama-3-8B) with Confidence Escalation, use BM25 + Vector + Cross-Encoder Reranker with 100% citations, and govern agent tools via MCP + RAGAS Eval.'
+    question: 'Are we using a 70-80% SLM Model Router, RBAC-partitioned Semantic Caching (cosine > 0.92 with User Security Group Hash), Multi-LLM Fallback (429/5xx), and Hybrid Search (BM25 + Vector + Reranker)?',
+    redLineFailure: '50x Token TCO blowout; Cross-User Semantic Cache Leak exposes executive data; single-vendor 429 outages; pure Vector Search fails on exact SKUs (Technical Code Blindness).',
+    architectRemediation: 'Deploy an AI Gateway with 75/25 SLM/LLM routing, Semantic Cache partitioned by User Security Group Hash, Multi-Provider Fallback, BM25 + Vector + Reranker, and MCP + RAGAS Eval.'
   },
   {
     id: 'gate-7',
-    layer: '7. Zero Trust, M365 RBAC/ABAC & AI Audit Layer',
-    pillarBadge: 'Pillar 4',
-    question: 'Does the AI pipeline propagate user identity via Entra ID On-Behalf-Of (OBO) with Hybrid Security Trimming, keep PII inside Sovereign/BYOK boundaries, and record an Immutable WORM Audit Trail?',
-    redLineFailure: 'Employees extract confidential Board/Salary docs from SharePoint via AI prompts; cross-border PII leaks violate Data Sovereignty laws.',
-    architectRemediation: 'Enforce Entra ID OBO + Index-time ACL filtering + Query-time Top-K permission verification, tokenize PII in-country with BYOK encryption, and log every decision to WORM storage.'
+    layer: '7. Zero Trust, Cloud FinOps, Egress & Right-Sizing Layer',
+    pillarBadge: 'Pillars 4 & 5',
+    question: 'Does AI enforce Entra ID OBO + BYOK/WORM Audit, and does our ADR justify Modular Monolith (<30 devs) vs. Microservices TCO (1x vs 10x) with Cross-AZ/Cloud Egress & Hot/Warm/Cold storage controls?',
+    redLineFailure: 'Unauthorized M365 data leaks in RAG; premature Microservices create a Distributed Monolith; unmonitored Cross-AZ Egress & Hot SSD hoarding burn 40% of cloud budget.',
+    architectRemediation: 'Enforce Entra ID OBO + Hybrid Security Trimming + WORM Audit, start with Modular Monolith unless >30 devs/scaling demands split, use Same-AZ VPC Endpoints, and automate Hot->Warm->Cold tiering.'
   }
 ];
 
