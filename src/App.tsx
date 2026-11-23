@@ -82,7 +82,7 @@ export function App() {
 
           <div className="header-right-cluster">
             <span className="app-version-pill" title="SA-Lab Current Release">
-              v1.4.0
+              v1.5.0
             </span>
 
             <div className="lang-switcher" role="group" aria-label="Language Switcher">
