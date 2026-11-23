@@ -528,47 +528,68 @@ async function callLLMStream(
   }
 
   if (config.provider === 'gemini') {
-    const modelName = config.model.trim() || 'gemini-2.5-flash';
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:streamGenerateContent?alt=sse&key=${encodeURIComponent(key)}`;
+    const primaryModel = config.model.trim() || 'gemini-2.5-flash';
+    const fallbackChain = Array.from(
+      new Set([
+        primaryModel,
+        'gemini-2.5-flash-lite',
+        'gemini-2.0-flash',
+        'gemini-2.0-flash-lite'
+      ])
+    );
 
-    const sendGemini = (includeThinkingBudget: boolean) =>
-      fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemPrompt }] },
-          contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-          generationConfig: {
-            temperature: 0.4,
-            maxOutputTokens: 450,
-            ...(includeThinkingBudget ? { thinkingConfig: { thinkingBudget: 0 } } : {})
-          }
-        })
-      });
+    let lastError = 'Gemini API Error';
 
-    let response = await sendGemini(true);
-    if (response.status === 400) {
-      const errBody = await response.text();
-      if (errBody.toLowerCase().includes('thinking')) {
-        response = await sendGemini(false);
-      } else {
-        throw new Error(`Gemini API Error (400): ${errBody.slice(0, 180)}`);
+    for (const modelName of fallbackChain) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:streamGenerateContent?alt=sse&key=${encodeURIComponent(key)}`;
+
+      const sendGemini = (includeThinkingBudget: boolean) =>
+        fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+            generationConfig: {
+              temperature: 0.4,
+              maxOutputTokens: 450,
+              ...(includeThinkingBudget ? { thinkingConfig: { thinkingBudget: 0 } } : {})
+            }
+          })
+        });
+
+      let response = await sendGemini(true);
+      if (response.status === 400) {
+        const errBody = await response.text();
+        if (errBody.toLowerCase().includes('thinking')) {
+          response = await sendGemini(false);
+        } else {
+          lastError = `Gemini API Error (400): ${errBody.slice(0, 180)}`;
+          break;
+        }
+      }
+
+      if (response.ok) {
+        return readSseStream(
+          response,
+          (chunk) => {
+            const c = chunk as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
+            return (c?.candidates?.[0]?.content?.parts || []).map((p) => p.text || '').join('');
+          },
+          onChunk
+        );
+      }
+
+      const errText = await response.text();
+      lastError = `Gemini API Error (${response.status} on ${modelName}): ${errText.slice(0, 140)}`;
+
+      // Retry next fallback model on transient 429/5xx overload or 404 model unavailability
+      if (![404, 429, 500, 502, 503, 504].includes(response.status)) {
+        break;
       }
     }
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Gemini API Error (${response.status}): ${errText.slice(0, 180)}`);
-    }
-
-    return readSseStream(
-      response,
-      (chunk) => {
-        const c = chunk as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
-        return (c?.candidates?.[0]?.content?.parts || []).map((p) => p.text || '').join('');
-      },
-      onChunk
-    );
+    throw new Error(lastError);
   }
 
   if (config.provider === 'anthropic') {
