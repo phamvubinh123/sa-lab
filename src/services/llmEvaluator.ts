@@ -532,9 +532,9 @@ async function callLLMStream(
     const fallbackChain = Array.from(
       new Set([
         primaryModel,
+        'gemini-2.5-flash',
         'gemini-2.5-flash-lite',
-        'gemini-2.0-flash',
-        'gemini-2.0-flash-lite'
+        'gemini-2.0-flash'
       ])
     );
 
@@ -581,7 +581,16 @@ async function callLLMStream(
       }
 
       const errText = await response.text();
-      lastError = `Gemini API Error (${response.status} on ${modelName}): ${errText.slice(0, 140)}`;
+      let cleanMsg = errText.slice(0, 140);
+      try {
+        const parsedErr = JSON.parse(errText);
+        if (parsedErr?.error?.message) {
+          cleanMsg = parsedErr.error.message;
+        }
+      } catch {
+        // keep slice
+      }
+      lastError = `Gemini (${response.status} on ${modelName}): ${cleanMsg}`;
 
       // Retry next fallback model on transient 429/5xx overload or 404 model unavailability
       if (![404, 429, 500, 502, 503, 504].includes(response.status)) {

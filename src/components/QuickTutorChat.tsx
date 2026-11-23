@@ -369,10 +369,20 @@ export const QuickTutorChat: React.FC<Props> = ({
             </select>
             <input
               type="text"
+              list="tutor-model-suggestions"
               value={llmConfig.model}
               onChange={(e) => setLlmConfig({ ...llmConfig, model: e.target.value })}
               placeholder="Model name"
             />
+            <datalist id="tutor-model-suggestions">
+              <option value="gemini-2.5-flash" />
+              <option value="gemini-2.5-flash-lite" />
+              <option value="gemini-2.5-pro" />
+              <option value="gemini-2.0-flash" />
+              <option value="gpt-4o-mini" />
+              <option value="gpt-4o" />
+              <option value="claude-3-5-sonnet-latest" />
+            </datalist>
           </div>
           <input
             type="password"
