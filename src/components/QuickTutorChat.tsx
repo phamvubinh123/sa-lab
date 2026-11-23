@@ -197,46 +197,70 @@ export const QuickTutorChat: React.FC<Props> = ({
       role: 'user',
       content: text
     };
-    const nextHistory = [...messages, userMsg];
-    setMessages(nextHistory);
+    const streamMsgId = `a-${Date.now()}`;
+    const hasLiveKey = llmConfig.apiKey.trim().length > 0;
+
+    setMessages((prev) => [
+      ...prev,
+      userMsg,
+      ...(hasLiveKey
+        ? [{ id: streamMsgId, role: 'assistant' as const, content: '...', mode: 'live-llm' as const }]
+        : [])
+    ]);
     if (!overrideText) setInput('');
     setIsLoading(true);
 
-    const contextSummary = `Active Tab: ${activeTab}\nCurrent Module: ${currentTopic.code} - ${currentTopic.title}\nGolden Rule: ${currentTopic.goldenRule}\nKey Terms: ${currentGuide.keyTerms.join(', ')}\nAnalogy: ${currentGuide.analogyTitle}`;
+    // Send ONLY the active currentTopic object (compact) for <1s TTFT
+    const currentTopicContext = JSON.stringify({
+      tab: activeTab,
+      code: currentTopic.code,
+      title: currentTopic.title,
+      goldenRule: currentTopic.goldenRule,
+      context: currentTopic.businessContext,
+      recommendedOption: currentTopic.optionsComparison.options[0]?.name,
+      keyAntiPatterns: currentTopic.antiPatterns.map((a) => a.name)
+    });
 
     try {
       const liveResult = await askSaTutor({
         question: text,
-        history: nextHistory,
-        contextSummary,
+        currentTopicContext,
         lang,
-        config: llmConfig
+        config: llmConfig,
+        onChunk: (accumulated) => {
+          setMessages((prev) =>
+            prev.map((m) => (m.id === streamMsgId ? { ...m, content: accumulated } : m))
+          );
+        }
       });
 
       if (liveResult.usedLiveLLM && liveResult.reply) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `a-${Date.now()}`,
-            role: 'assistant',
-            content: liveResult.reply,
-            mode: 'live-llm'
-          }
-        ]);
+        setMessages((prev) =>
+          prev.map((m) => (m.id === streamMsgId ? { ...m, content: liveResult.reply } : m))
+        );
       } else {
         const localReply = buildLocalTutorAnswer(text, currentTopic.id, lang);
         const finalContent = liveResult.errorNote
           ? `${localReply}\n\n(${isVi ? 'Lưu ý API' : 'API Note'}: ${liveResult.errorNote})`
           : localReply;
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `a-${Date.now()}`,
-            role: 'assistant',
-            content: finalContent,
-            mode: 'built-in'
+
+        setMessages((prev) => {
+          const exists = prev.some((m) => m.id === streamMsgId);
+          if (exists) {
+            return prev.map((m) =>
+              m.id === streamMsgId ? { ...m, content: finalContent, mode: 'built-in' } : m
+            );
           }
-        ]);
+          return [
+            ...prev,
+            {
+              id: streamMsgId,
+              role: 'assistant',
+              content: finalContent,
+              mode: 'built-in'
+            }
+          ];
+        });
       }
     } finally {
       setIsLoading(false);

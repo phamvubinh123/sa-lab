@@ -472,10 +472,55 @@ export interface TutorChatMessage {
   mode?: 'live-llm' | 'built-in';
 }
 
-async function callLLMText(
+async function readSseStream(
+  response: Response,
+  extractDelta: (jsonChunk: unknown) => string,
+  onChunk?: (accumulated: string) => void
+): Promise<string> {
+  if (!response.body) {
+    throw new Error('ReadableStream not supported in this browser.');
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder('utf-8');
+  let buffer = '';
+  let fullText = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line.startsWith('data:')) continue;
+      const payload = line.slice(5).trim();
+      if (!payload || payload === '[DONE]') continue;
+
+      try {
+        const parsed = JSON.parse(payload);
+        const delta = extractDelta(parsed);
+        if (delta) {
+          fullText += delta;
+          onChunk?.(fullText);
+        }
+      } catch {
+        // Ignore partial JSON lines
+      }
+    }
+  }
+
+  return fullText;
+}
+
+async function callLLMStream(
   config: LLMConfig,
   systemPrompt: string,
-  messages: { role: 'user' | 'assistant'; content: string }[]
+  userPrompt: string,
+  onChunk?: (accumulated: string) => void
 ): Promise<string> {
   const key = config.apiKey.trim();
   if (!key) {
@@ -484,25 +529,46 @@ async function callLLMText(
 
   if (config.provider === 'gemini') {
     const modelName = config.model.trim() || 'gemini-2.5-flash';
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(key)}`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents: messages.map((m) => ({
-          role: m.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: m.content }]
-        })),
-        generationConfig: { temperature: 0.45 }
-      })
-    });
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:streamGenerateContent?alt=sse&key=${encodeURIComponent(key)}`;
+
+    const sendGemini = (includeThinkingBudget: boolean) =>
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 450,
+            ...(includeThinkingBudget ? { thinkingConfig: { thinkingBudget: 0 } } : {})
+          }
+        })
+      });
+
+    let response = await sendGemini(true);
+    if (response.status === 400) {
+      const errBody = await response.text();
+      if (errBody.toLowerCase().includes('thinking')) {
+        response = await sendGemini(false);
+      } else {
+        throw new Error(`Gemini API Error (400): ${errBody.slice(0, 180)}`);
+      }
+    }
+
     if (!response.ok) {
       const errText = await response.text();
       throw new Error(`Gemini API Error (${response.status}): ${errText.slice(0, 180)}`);
     }
-    const data = await response.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    return readSseStream(
+      response,
+      (chunk) => {
+        const c = chunk as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
+        return (c?.candidates?.[0]?.content?.parts || []).map((p) => p.text || '').join('');
+      },
+      onChunk
+    );
   }
 
   if (config.provider === 'anthropic') {
@@ -516,17 +582,24 @@ async function callLLMText(
       },
       body: JSON.stringify({
         model: config.model.trim() || 'claude-3-5-sonnet-latest',
-        max_tokens: 900,
+        max_tokens: 450,
+        stream: true,
         system: systemPrompt,
-        messages: messages.map((m) => ({ role: m.role, content: m.content }))
+        messages: [{ role: 'user', content: userPrompt }]
       })
     });
     if (!response.ok) {
       const errText = await response.text();
       throw new Error(`Anthropic API Error (${response.status}): ${errText.slice(0, 180)}`);
     }
-    const data = await response.json();
-    return data?.content?.[0]?.text || '';
+    return readSseStream(
+      response,
+      (chunk) => {
+        const c = chunk as { type?: string; delta?: { text?: string } };
+        return c?.type === 'content_block_delta' ? c.delta?.text || '' : '';
+      },
+      onChunk
+    );
   }
 
   const baseUrl =
@@ -542,10 +615,12 @@ async function callLLMText(
     },
     body: JSON.stringify({
       model: config.model.trim() || 'gpt-4o-mini',
-      temperature: 0.45,
+      temperature: 0.4,
+      max_tokens: 450,
+      stream: true,
       messages: [
         { role: 'system', content: systemPrompt },
-        ...messages.map((m) => ({ role: m.role, content: m.content }))
+        { role: 'user', content: userPrompt }
       ]
     })
   });
@@ -554,43 +629,44 @@ async function callLLMText(
     const errText = await response.text();
     throw new Error(`OpenAI-Compatible API Error (${response.status}): ${errText.slice(0, 180)}`);
   }
-  const data = await response.json();
-  return data?.choices?.[0]?.message?.content || '';
+
+  return readSseStream(
+    response,
+    (chunk) => {
+      const c = chunk as { choices?: { delta?: { content?: string } }[] };
+      return c?.choices?.[0]?.delta?.content || '';
+    },
+    onChunk
+  );
 }
 
 export async function askSaTutor(params: {
   question: string;
-  history: TutorChatMessage[];
-  contextSummary: string;
+  currentTopicContext: string;
   lang: 'en' | 'vi';
   config: LLMConfig;
+  onChunk?: (accumulated: string) => void;
 }): Promise<{ reply: string; usedLiveLLM: boolean; errorNote?: string }> {
-  const { question, history, contextSummary, lang, config } = params;
+  const { question, currentTopicContext, lang, config, onChunk } = params;
 
   const systemPrompt =
     lang === 'vi'
-      ? `Bạn là Senior Solutions Architect Mentor cực kỳ thân thiện, chuyên giải thích kiến trúc hệ thống cho người mới dễ hiểu nhất.
-Quy tắc trả lời:
-- Trả lời bằng tiếng Việt tự nhiên, ngắn gọn (3–6 câu hoặc gạch đầu dòng), đi thẳng vào trọng tâm.
-- Luôn dùng 1 ví dụ đời thường dễ hình dung nếu người dùng hỏi về thuật ngữ hoặc cơ chế.
-- Nếu người dùng hỏi so sánh hay phản biện, nêu rõ sự đánh đổi (Trade-off) và khi nào nên/không nên dùng.
-Ngữ cảnh người dùng đang xem trên SA-Lab:
-${contextSummary}`
-      : `You are a friendly Senior Solutions Architect Mentor helping a beginner clearly understand Enterprise & AI Architecture.
-Rules:
-- Keep answers concise (3–6 sentences or crisp bullets), clear, and jargon-light.
-- Use a quick real-world analogy when explaining technical terms or patterns.
-- Highlight practical trade-offs and when NOT to use a pattern.
-Current SA-Lab page context:
-${contextSummary}`;
+      ? `Bạn là Senior Solutions Architect Mentor thân thiện.
+Quy tắc bắt buộc:
+- Trả lời cực kỳ súc tích, chỉ khoảng 150–200 từ (gạch đầu dòng ngắn gọn, dễ đọc).
+- Giải thích đơn giản cho người mới kèm 1 ví dụ đời thường ngắn nếu hỏi về thuật ngữ/cơ chế.
+- Chỉ dựa vào ngữ cảnh bài học hiện tại dưới đây:
+${currentTopicContext}`
+      : `You are a friendly Senior Solutions Architect Mentor.
+Strict rules:
+- Keep your answer concise at 150–200 words max using crisp bullets.
+- Explain clearly for a beginner with a quick real-world analogy when asked about terms or patterns.
+- Focus strictly on the current topic context below:
+${currentTopicContext}`;
 
   if (config.apiKey.trim()) {
     try {
-      const recent = history.slice(-6).map((m) => ({ role: m.role, content: m.content }));
-      const reply = await callLLMText(config, systemPrompt, [
-        ...recent,
-        { role: 'user', content: question }
-      ]);
+      const reply = await callLLMStream(config, systemPrompt, question, onChunk);
       if (reply.trim()) {
         return { reply: reply.trim(), usedLiveLLM: true };
       }
