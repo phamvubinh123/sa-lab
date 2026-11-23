@@ -39,7 +39,7 @@ export interface BoardroomMessage {
 
 const DEFAULT_MODELS: Record<LLMProvider, string> = {
   openai: 'gpt-4o-mini',
-  gemini: 'gemini-2.5-flash',
+  gemini: 'gemini-3.8-flash',
   anthropic: 'claude-3-5-sonnet-latest',
   custom: 'gpt-4o-mini'
 };
@@ -528,10 +528,10 @@ async function callLLMStream(
   }
 
   if (config.provider === 'gemini') {
-    const primaryModel = config.model.trim() || 'gemini-2.5-flash';
+    const primaryModel = config.model.trim() || 'gemini-3.8-flash';
     const staticChain = Array.from(
-      new Set([primaryModel, 'gemini-2.5-flash'])
-    ).slice(0, 2);
+      new Set([primaryModel, 'gemini-3.8-flash', 'gemini-3.5-flash-lite'])
+    ).slice(0, 3);
 
     const fetchWithTimeout = async (url: string, init: RequestInit, timeoutMs: number) => {
       const controller = new AbortController();

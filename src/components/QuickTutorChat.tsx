@@ -355,7 +355,7 @@ export const QuickTutorChat: React.FC<Props> = ({
                 const provider = e.target.value as LLMProvider;
                 const defaultModel =
                   provider === 'gemini'
-                    ? 'gemini-2.5-flash'
+                    ? 'gemini-3.8-flash'
                     : provider === 'anthropic'
                     ? 'claude-3-5-sonnet-latest'
                     : 'gpt-4o-mini';
@@ -375,10 +375,9 @@ export const QuickTutorChat: React.FC<Props> = ({
               placeholder="Model name"
             />
             <datalist id="tutor-model-suggestions">
-              <option value="gemini-2.5-flash" />
-              <option value="gemini-2.5-flash-lite" />
               <option value="gemini-3.8-flash" />
-              <option value="gemini-2.5-pro" />
+              <option value="gemini-3.5-flash-lite" />
+              <option value="gemini-2.5-flash" />
               <option value="gpt-4o-mini" />
               <option value="gpt-4o" />
               <option value="claude-3-5-sonnet-latest" />
