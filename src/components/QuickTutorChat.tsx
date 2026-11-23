@@ -132,6 +132,80 @@ function buildLocalTutorAnswer(
     : `For "${topic.title}", the Golden Rule is:\n"${topic.goldenRule}"\n\n• Key terms: ${guide.keyTerms.join(', ')} (type any acronym and I will explain it).\n• Tip: Click the 🔑 icon above to plug in a Gemini / OpenAI API Key for open-ended AI mentoring!`;
 }
 
+function renderInlineMarkdown(text: string): React.ReactNode[] {
+  // Split by **bold**, `code`, or *italic*
+  const tokenRegex = /(\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g;
+  const parts = text.split(tokenRegex);
+  return parts.map((part, idx) => {
+    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+      return <strong key={idx}>{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
+      return (
+        <code key={idx} className="tutor-md-code">
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    if (part.startsWith('*') && part.endsWith('*') && part.length > 2) {
+      return <em key={idx}>{part.slice(1, -1)}</em>;
+    }
+    return part;
+  });
+}
+
+const FormattedTutorContent: React.FC<{ content: string }> = ({ content }) => {
+  const lines = content.split('\n');
+  const blocks: React.ReactNode[] = [];
+  let listItems: React.ReactNode[] = [];
+
+  const flushList = (keyPrefix: string | number) => {
+    if (listItems.length > 0) {
+      blocks.push(
+        <ul key={`ul-${keyPrefix}`} className="tutor-md-list">
+          {listItems}
+        </ul>
+      );
+      listItems = [];
+    }
+  };
+
+  lines.forEach((rawLine, idx) => {
+    const line = rawLine.trim();
+    if (!line) {
+      flushList(idx);
+      return;
+    }
+
+    const headingMatch = line.match(/^#{1,4}\s+(.+)$/);
+    if (headingMatch) {
+      flushList(idx);
+      blocks.push(
+        <h5 key={`h-${idx}`} className="tutor-md-heading">
+          {renderInlineMarkdown(headingMatch[1])}
+        </h5>
+      );
+      return;
+    }
+
+    const bulletMatch = line.match(/^(\*|-|•|\d+\.)\s+(.+)$/);
+    if (bulletMatch) {
+      listItems.push(<li key={`li-${idx}`}>{renderInlineMarkdown(bulletMatch[2])}</li>);
+      return;
+    }
+
+    flushList(idx);
+    blocks.push(
+      <p key={`p-${idx}`} className="tutor-md-para">
+        {renderInlineMarkdown(line)}
+      </p>
+    );
+  });
+
+  flushList('end');
+  return <>{blocks}</>;
+};
+
 export const QuickTutorChat: React.FC<Props> = ({
   isOpen,
   onClose,
@@ -415,8 +489,10 @@ export const QuickTutorChat: React.FC<Props> = ({
             <div className={`tutor-msg-bubble ${msg.content === '...' ? 'typing' : ''}`}>
               {msg.content === '...' ? (
                 <span>{isVi ? 'Đang kết nối & trả lời...' : 'Streaming response...'}</span>
+              ) : msg.role === 'assistant' ? (
+                <FormattedTutorContent content={msg.content} />
               ) : (
-                msg.content.split('\n').map((line, i) => <p key={i}>{line || '\u00A0'}</p>)
+                <p className="tutor-md-para">{msg.content}</p>
               )}
             </div>
           </div>

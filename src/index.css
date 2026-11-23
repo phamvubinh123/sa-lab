@@ -3249,6 +3249,59 @@ body,
   object-fit: contain;
 }
 
+/* === SA TUTOR MARKDOWN FORMATTING === */
+.tutor-md-heading {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: hsl(174, 78%, 24%);
+  margin: 0.45rem 0 0.25rem;
+}
+
+.tutor-md-para {
+  margin: 0 0 0.4rem;
+  line-height: 1.55;
+}
+
+.tutor-md-para:last-child {
+  margin-bottom: 0;
+}
+
+.tutor-md-list {
+  margin: 0.25rem 0 0.5rem;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+}
+
+.tutor-md-list li {
+  line-height: 1.5;
+}
+
+.tutor-md-list li::marker {
+  color: var(--accent-teal);
+  font-weight: 700;
+}
+
+.tutor-msg-bubble strong {
+  color: hsl(220, 35%, 14%);
+  font-weight: 700;
+}
+
+.tutor-msg.user .tutor-msg-bubble strong {
+  color: #ffffff;
+}
+
+.tutor-md-code {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  background: hsl(214, 24%, 92%);
+  color: hsl(204, 80%, 30%);
+  padding: 0.08rem 0.35rem;
+  border-radius: 4px;
+}
+
+
 
 
 
