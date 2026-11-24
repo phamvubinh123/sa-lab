@@ -95,18 +95,8 @@ export function App() {
           </button>
 
           <div className="header-right-cluster">
-            <button
-              id="btn-toggle-tutor"
-              type="button"
-              className={`tutor-header-btn ${isTutorOpen ? 'active' : ''}`}
-              onClick={() => setIsTutorOpen((prev) => !prev)}
-            >
-              <MessageCircleQuestion size={15} />
-              <span>{lang === 'vi' ? 'Hỏi nhanh Tutor' : 'Ask SA Tutor'}</span>
-            </button>
-
             <span className="app-version-pill" title="SA-Lab Current Release">
-              v2.1.1
+              v2.1.2
             </span>
 
             <div className="lang-switcher" role="group" aria-label="Language Switcher">

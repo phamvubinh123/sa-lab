@@ -4096,6 +4096,81 @@ body,
     padding: 0.85rem 0.95rem;
     border-radius: 14px;
   }
+
+  .header-inner {
+    padding: 0.68rem 0.85rem 0.55rem;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+  }
+
+  .brand-home-btn {
+    min-width: 0;
+    flex: 1 1 auto;
+    gap: 0.55rem;
+    padding: 0.15rem 0.35rem 0.15rem 0.15rem;
+    margin: 0;
+  }
+
+  .brand-mark.brand-mark-logo {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 10px;
+  }
+
+  .brand-mark.brand-mark-logo img {
+    width: 34px;
+    height: 34px;
+  }
+
+  .brand-title-row {
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.12rem;
+  }
+
+  .brand-title-row h1 {
+    font-size: 0.92rem;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .version-tag {
+    font-size: 0.62rem;
+    padding: 0.08rem 0.42rem;
+    line-height: 1.25;
+  }
+
+  .header-right-cluster {
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+    gap: 0.35rem;
+  }
+
+  .app-version-pill {
+    font-size: 0.68rem;
+    padding: 0.22rem 0.48rem;
+  }
+
+  .lang-switcher {
+    padding: 0.16rem 0.22rem;
+  }
+
+  .lang-icon {
+    display: none;
+  }
+
+  .lang-btn {
+    font-size: 0.68rem;
+    padding: 0.2rem 0.42rem;
+  }
 }
 
 

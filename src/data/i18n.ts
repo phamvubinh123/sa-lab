@@ -181,8 +181,8 @@ export const UI_COPY: Record<
   }
 > = {
   en: {
-    headerTitle: 'SA-LAB // ENTERPRISE ARCHITECTURE WORKBENCH',
-    headerTag: '5-PILLAR SIMULATOR & AI SYSTEMS ENGINEERING',
+    headerTitle: 'Solution Architect Lab',
+    headerTag: 'Enterprise Workbench',
     headerTagline: 'Trade-off Analysis · Design Boundaries · Day-2 Operational Feasibility · Zero-Trust Governance',
     masteryLabel: '5-PILLAR MASTERY',
     modulesWord: 'Modules',
@@ -349,8 +349,8 @@ export const UI_COPY: Record<
     }
   },
   vi: {
-    headerTitle: 'SA-LAB // BÀN LÀM VIỆC KIẾN TRÚC DOANH NGHIỆP',
-    headerTag: 'MÔ PHỎNG 5 KHỐI TRỤ CỘT & KỸ NGHỆ HỆ THỐNG AI',
+    headerTitle: 'Solution Architect Lab',
+    headerTag: 'Enterprise Workbench',
     headerTagline: 'Tư duy Đánh đổi (Trade-offs) · Ranh giới Thiết kế · Khả thi Vận hành Day-2 · Quản trị Zero Trust',
     masteryLabel: 'TIẾN ĐỘ LÀM CHỦ 5 KHỐI',
     modulesWord: 'Chủ đề',
