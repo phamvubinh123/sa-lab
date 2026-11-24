@@ -3301,6 +3301,453 @@ body,
   border-radius: 4px;
 }
 
+/* === 5-TAB NAVIGATION & PMI-CPMAI LIFECYCLE WORKBENCH === */
+.primary-mode-nav.five-tabs {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.mode-nav-btn.cpmai-tab-highlight:not(.active) {
+  border-color: hsla(204, 82%, 48%, 0.4);
+  background: linear-gradient(180deg, hsl(204, 100%, 97%) 0%, var(--bg-surface) 100%);
+}
+
+.cpmai-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.cpmai-hero-card,
+.cpmai-workspace-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+}
+
+.cpmai-hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.cpmai-hero-top h2 {
+  font-size: 1.32rem;
+  margin: 0.2rem 0 0.3rem;
+}
+
+.cpmai-readiness-box {
+  min-width: 170px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.cpmai-readiness-box span {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.cpmai-readiness-box strong {
+  font-family: var(--font-mono);
+  font-size: 1.55rem;
+  line-height: 1.15;
+}
+
+.cpmai-readiness-box small {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.cpmai-preset-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-bottom: 0.85rem;
+}
+
+.cpmai-preset-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.cpmai-preset-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.cpmai-preset-btn {
+  padding: 0.34rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cpmai-preset-btn.active,
+.cpmai-preset-btn:hover {
+  background: var(--accent-teal);
+  border-color: var(--accent-teal);
+  color: #ffffff;
+}
+
+.cpmai-project-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+.cpmai-project-inputs label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.cpmai-project-inputs input {
+  width: 100%;
+  padding: 0.52rem 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.cpmai-project-inputs input:focus {
+  outline: none;
+  border-color: var(--accent-teal);
+  background: var(--bg-surface);
+}
+
+/* 6-Phase Iterative Loop Stepper */
+.cpmai-phase-stepper {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.55rem;
+}
+
+.cpmai-phase-btn {
+  text-align: left;
+  padding: 0.72rem 0.78rem;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-subtle);
+  background: var(--bg-surface);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: all 0.16s ease;
+}
+
+.cpmai-phase-btn:hover {
+  border-color: var(--accent-teal);
+  transform: translateY(-1px);
+}
+
+.cpmai-phase-btn.active {
+  border-color: var(--accent-teal);
+  background: linear-gradient(180deg, hsl(174, 60%, 97%) 0%, var(--bg-surface) 100%);
+  box-shadow: 0 4px 12px hsla(174, 72%, 36%, 0.16);
+}
+
+.cpmai-phase-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+}
+
+.cpmai-roman {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.cpmai-gate-pill {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.1rem 0.36rem;
+  border-radius: 999px;
+}
+
+.cpmai-gate-pill.go {
+  background: hsl(156, 72%, 88%);
+  color: hsl(156, 78%, 22%);
+}
+
+.cpmai-gate-pill.conditional {
+  background: hsl(42, 95%, 86%);
+  color: hsl(32, 88%, 28%);
+}
+
+.cpmai-gate-pill.no-go {
+  background: hsl(350, 88%, 90%);
+  color: hsl(350, 78%, 34%);
+}
+
+.cpmai-phase-btn strong {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  line-height: 1.25;
+}
+
+.cpmai-bridge-mini {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  line-height: 1.25;
+}
+
+.cpmai-phase-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.cpmai-phase-header h3 {
+  font-size: 1.2rem;
+  margin: 0.25rem 0 0.2rem;
+}
+
+.cpmai-tool-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.1rem;
+}
+
+.cpmai-tool-panel {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  min-width: 0;
+}
+
+.cpmai-tool-panel h4 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  margin-bottom: 0.85rem;
+}
+
+.toggle-card.danger-toggle {
+  border-color: hsl(350, 76%, 54%);
+  background: hsl(350, 95%, 97%);
+}
+
+.cpmai-pattern-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cpmai-pattern-card {
+  text-align: left;
+  padding: 0.68rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border-subtle);
+  background: var(--bg-surface);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  transition: all 0.14s ease;
+}
+
+.cpmai-pattern-card:hover {
+  border-color: var(--accent-teal);
+}
+
+.cpmai-pattern-card.selected {
+  border-color: var(--accent-teal);
+  background: hsl(174, 65%, 97%);
+}
+
+.cpmai-pattern-card strong {
+  font-size: 0.83rem;
+  color: var(--text-primary);
+}
+
+.cpmai-pattern-card span {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.cpmai-sa-link {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: hsl(204, 82%, 34%);
+  background: hsl(204, 92%, 94%);
+  padding: 0.12rem 0.4rem;
+  border-radius: 4px;
+  align-self: flex-start;
+  margin-top: 0.15rem;
+}
+
+.kpi-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.cpmai-trust-box {
+  margin-top: 0.85rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.8rem 0.9rem;
+}
+
+.cpmai-trust-box strong {
+  display: block;
+  font-size: 0.82rem;
+  margin-bottom: 0.5rem;
+}
+
+.cpmai-trust-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+}
+
+.cpmai-check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.cpmai-loopback-grid {
+  margin-top: 0.85rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.cpmai-loop-btn {
+  text-align: left;
+  padding: 0.7rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid hsla(38, 88%, 48%, 0.4);
+  background: hsl(42, 100%, 97%);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  transition: all 0.15s ease;
+}
+
+.cpmai-loop-btn:hover {
+  border-color: hsl(32, 88%, 44%);
+  background: hsl(42, 95%, 92%);
+}
+
+.cpmai-loop-btn strong {
+  font-size: 0.78rem;
+  color: hsl(32, 88%, 28%);
+}
+
+.cpmai-loop-btn span {
+  font-size: 0.73rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.cpmai-export-preview {
+  background: hsl(214, 24%, 95%);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.8rem;
+  max-height: 290px;
+  overflow: auto;
+}
+
+.cpmai-export-preview pre {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.48;
+  color: hsl(220, 32%, 18%);
+  white-space: pre-wrap;
+}
+
+@media (max-width: 1120px) {
+  .primary-mode-nav.five-tabs {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .cpmai-phase-stepper {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .cpmai-tool-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .primary-mode-nav.five-tabs {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 0.5rem;
+    padding: 0 0.85rem 0.7rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .primary-mode-nav.five-tabs .mode-nav-btn {
+    min-width: 185px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+
+  .cpmai-hero-top {
+    flex-direction: column;
+  }
+
+  .cpmai-readiness-box {
+    width: 100%;
+    text-align: left;
+  }
+
+  .cpmai-project-inputs,
+  .cpmai-loopback-grid,
+  .kpi-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .cpmai-phase-stepper {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
 
 
 

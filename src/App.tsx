@@ -4,18 +4,20 @@ import { PillarMasteryExplorer } from './components/PillarMasteryExplorer';
 import { InteractiveSimulators } from './components/InteractiveSimulators';
 import { CapstoneArena } from './components/CapstoneArena';
 import { AdrAndBoardroomStudio } from './components/AdrAndBoardroomStudio';
+import { CpmaiLifecycleLab } from './components/CpmaiLifecycleLab';
 import { GlossaryTooltip } from './components/GlossaryText';
 import { QuickTutorChat } from './components/QuickTutorChat';
 import {
   Award,
   FileCheck2,
+  GitBranch,
   Globe,
   Layers,
   MessageCircleQuestion,
   Sliders
 } from 'lucide-react';
 
-type WorkbenchTab = 'pillars' | 'simulators' | 'capstone' | 'adr-boardroom';
+type WorkbenchTab = 'pillars' | 'simulators' | 'capstone' | 'adr-boardroom' | 'cpmai-lifecycle';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<WorkbenchTab>('pillars');
@@ -90,7 +92,7 @@ export function App() {
             </button>
 
             <span className="app-version-pill" title="SA-Lab Current Release">
-              v1.8.3
+              v2.0.0
             </span>
 
             <div className="lang-switcher" role="group" aria-label="Language Switcher">
@@ -115,8 +117,8 @@ export function App() {
           </div>
         </div>
 
-        {/* Primary Mode Navigation Bar */}
-        <nav className="primary-mode-nav" aria-label="Main Workbench Modes">
+        {/* Primary Mode Navigation Bar (5 Tabs) */}
+        <nav className="primary-mode-nav five-tabs" aria-label="Main Workbench Modes">
           <button
             id="nav-tab-pillars"
             className={`mode-nav-btn ${activeTab === 'pillars' ? 'active' : ''}`}
@@ -164,6 +166,18 @@ export function App() {
               <span>{t.nav.t4Sub}</span>
             </div>
           </button>
+
+          <button
+            id="nav-tab-cpmai"
+            className={`mode-nav-btn cpmai-tab-highlight ${activeTab === 'cpmai-lifecycle' ? 'active' : ''}`}
+            onClick={() => setActiveTab('cpmai-lifecycle')}
+          >
+            <GitBranch size={17} />
+            <div>
+              <strong>{t.nav.t5Title}</strong>
+              <span>{t.nav.t5Sub}</span>
+            </div>
+          </button>
         </nav>
       </header>
 
@@ -180,6 +194,7 @@ export function App() {
         {activeTab === 'simulators' && <InteractiveSimulators lang={lang} />}
         {activeTab === 'capstone' && <CapstoneArena lang={lang} />}
         {activeTab === 'adr-boardroom' && <AdrAndBoardroomStudio lang={lang} />}
+        {activeTab === 'cpmai-lifecycle' && <CpmaiLifecycleLab lang={lang} />}
       </main>
 
       <footer className="workbench-footer">

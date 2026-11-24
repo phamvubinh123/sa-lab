@@ -28,6 +28,8 @@ export const UI_COPY: Record<
       t3Sub: string;
       t4Title: string;
       t4Sub: string;
+      t5Title: string;
+      t5Sub: string;
     };
     explorer: {
       pillarWord: string;
@@ -192,7 +194,9 @@ export const UI_COPY: Record<
       t3Title: '3. End-to-End Capstone & 7-Gate Checklist',
       t3Sub: 'Project Horizon 5-Stage Scenario + SA Gatekeeper',
       t4Title: '4. ADR Studio, 3Y TCO & Live LLM Boardroom',
-      t4Sub: 'Plug in API Key for Live ARB Grading & CxO Defense'
+      t4Sub: 'Plug in API Key for Live ARB Grading & CxO Defense',
+      t5Title: '5. AI Lifecycle Lab (PMI-CPMAI)',
+      t5Sub: '6-Phase Hands-On Simulators, Go/No-Go Gates & Project Charter'
     },
     explorer: {
       pillarWord: 'PILLAR',
@@ -358,7 +362,9 @@ export const UI_COPY: Record<
       t3Title: '3. Capstone Xuyên suốt & 7 Cổng Kiểm trực',
       t3Sub: 'Kịch bản Project Horizon 5 chặng + SA Gatekeeper',
       t4Title: '4. ADR Studio, TCO 3 Năm & Hội đồng CxO',
-      t4Sub: 'Cắm LLM API Key để chấm ADR & phản biện trực tiếp'
+      t4Sub: 'Cắm LLM API Key để chấm ADR & phản biện trực tiếp',
+      t5Title: '5. Vòng đời Dự án AI (PMI-CPMAI)',
+      t5Sub: '6 Giả lập Thực hành, Cổng Go/No-Go & Xuất AI Charter'
     },
     explorer: {
       pillarWord: 'KHỐI',

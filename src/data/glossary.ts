@@ -415,6 +415,54 @@ export const SA_GLOSSARY: GlossaryEntry[] = [
     term: 'VPC Endpoint',
     fullName: 'Private Cloud Storage/Service Endpoint',
     explanation: 'Đường kết nối nội bộ trực tiếp tới Object Storage (S3/Blob) trong cùng Region mà không đi qua NAT Gateway hay Internet, tiết kiệm đáng kể chi phí Data Egress.'
+  },
+  // PMI-CPMAI Full AI Lifecycle Terms
+  {
+    term: 'CPMAI',
+    fullName: 'Cognitive Project Management for AI (PMI-CPMAI)',
+    explanation: 'Phương pháp quản trị dự án AI chuẩn quốc tế của PMI gồm 6 giai đoạn lặp (Business, Data Understanding, Data Prep, Model Dev, Evaluation, Operationalization) và các cổng Go/No-Go.',
+    caseSensitive: true
+  },
+  {
+    term: 'GIGO',
+    fullName: 'Garbage In, Garbage Out',
+    explanation: 'Nguyên lý "Rác vào → Rác ra": nếu dữ liệu đầu vào thiếu liên quan, nhiễu hoặc sai lệch, model AI dù hiện đại đến mấy vẫn sẽ cho kết quả tệ.',
+    caseSensitive: true
+  },
+  {
+    term: 'Data Leakage',
+    fullName: 'Rò rỉ Dữ liệu Huấn luyện',
+    explanation: 'Lỗi nghiêm trọng khi thông tin từ tương lai hoặc đáp án vô tình lọt vào tập huấn luyện, khiến model đạt điểm cực cao trong phòng lab nhưng sập hoàn toàn ngoài thực tế.'
+  },
+  {
+    term: 'Training-Serving Skew',
+    fullName: 'Độ lệch giữa Huấn luyện & Vận hành',
+    explanation: 'Hiện tượng dữ liệu lúc huấn luyện (làm sạch thủ công trong notebook) khác với dữ liệu thực tế lúc vận hành Production, làm suy giảm mạnh hiệu năng model.'
+  },
+  {
+    term: 'Ground Truth',
+    fullName: 'Dữ liệu Chuẩn gốc (Nhãn chuẩn)',
+    explanation: 'Bộ đáp án/nhãn đúng đã được nhiều chuyên gia nghiệp vụ thẩm định chéo (Consensus QA) dùng để huấn luyện và chấm điểm chính xác cho AI.'
+  },
+  {
+    term: 'Accuracy Trap',
+    fullName: 'Bẫy Độ chính xác Kỹ thuật',
+    explanation: 'Tình huống model đạt 95–98% Accuracy kỹ thuật nhưng thất bại về mục tiêu kinh doanh (vd: bỏ sót các ca gian lận hiếm gặp hoặc tìm nhầm mã SKU).'
+  },
+  {
+    term: 'Data Drift',
+    fullName: 'Sự trôi lệch Dữ liệu Đầu vào',
+    explanation: 'Phân phối dữ liệu thực tế thay đổi theo thời gian (vd: hành vi mua sắm thay đổi sau dịch/mùa vụ), khiến model cũ dần mất độ chính xác và cần huấn luyện lại.'
+  },
+  {
+    term: 'Model Scaffolding',
+    fullName: 'Lớp Vỏ Ứng dụng bọc quanh Model',
+    explanation: 'Phần giao diện, API wrapper và luồng nghiệp vụ mà người dùng tương tác — cần tách rời khỏi lõi Model Operationalization để nâng cấp model không làm vỡ app.'
+  },
+  {
+    term: 'Trustworthy AI',
+    fullName: 'AI Đáng tin cậy (5 Lớp PMI-CPMAI)',
+    explanation: 'Khung 5 lớp bắt buộc trong dự án AI: Công bằng (Fairness), Minh bạch/Giải thích được (Transparency), Riêng tư (Privacy), An toàn (Safety) và Trách nhiệm giải trình (Accountability).'
   }
 ];
 
