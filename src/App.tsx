@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { UI_COPY, type Lang } from './data/i18n';
 import { PillarMasteryExplorer } from './components/PillarMasteryExplorer';
 import { InteractiveSimulators } from './components/InteractiveSimulators';
@@ -57,6 +57,7 @@ export function App() {
   }, [lang]);
 
   const [homeResetKey, setHomeResetKey] = useState(0);
+  const navRef = useRef<HTMLElement | null>(null);
 
   const handleToggleMastered = (topicId: string) => {
     setMasteredTopicIds((prev) =>
@@ -67,6 +68,7 @@ export function App() {
   const handleGoHome = () => {
     setActiveTab('pillars');
     setHomeResetKey((prev) => prev + 1);
+    navRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -96,7 +98,7 @@ export function App() {
 
           <div className="header-right-cluster">
             <span className="app-version-pill" title="SA-Lab Current Release">
-              v2.1.3
+              v2.1.4
             </span>
 
             <div className="lang-switcher" role="group" aria-label="Language Switcher">
@@ -122,7 +124,7 @@ export function App() {
         </div>
 
         {/* Primary Mode Navigation Bar (5 Tabs) */}
-        <nav className="primary-mode-nav five-tabs" aria-label="Main Workbench Modes">
+        <nav ref={navRef} className="primary-mode-nav five-tabs" aria-label="Main Workbench Modes">
           <button
             id="nav-tab-pillars"
             className={`mode-nav-btn ${activeTab === 'pillars' ? 'active' : ''}`}
