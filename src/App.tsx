@@ -56,10 +56,18 @@ export function App() {
     }
   }, [lang]);
 
+  const [homeResetKey, setHomeResetKey] = useState(0);
+
   const handleToggleMastered = (topicId: string) => {
     setMasteredTopicIds((prev) =>
       prev.includes(topicId) ? prev.filter((id) => id !== topicId) : [...prev, topicId]
     );
+  };
+
+  const handleGoHome = () => {
+    setActiveTab('pillars');
+    setHomeResetKey((prev) => prev + 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const t = UI_COPY[lang];
@@ -70,7 +78,13 @@ export function App() {
       {/* Top Enterprise Workbench Header */}
       <header className="top-workbench-header">
         <div className="header-inner">
-          <div className="brand-cluster">
+          <button
+            type="button"
+            className="brand-cluster brand-home-btn"
+            onClick={handleGoHome}
+            title={lang === 'vi' ? 'Về trang chủ SA-Lab' : 'Back to SA-Lab Home'}
+            aria-label={lang === 'vi' ? 'Về trang chủ SA-Lab' : 'Back to SA-Lab Home'}
+          >
             <div className="brand-mark brand-mark-logo">
               <img src="./sa-lab-logo.png" alt="SA-Lab Logo" width={42} height={42} />
             </div>
@@ -78,7 +92,7 @@ export function App() {
               <h1>{t.headerTitle}</h1>
               <span className="version-tag">{t.headerTag}</span>
             </div>
-          </div>
+          </button>
 
           <div className="header-right-cluster">
             <button
@@ -92,7 +106,7 @@ export function App() {
             </button>
 
             <span className="app-version-pill" title="SA-Lab Current Release">
-              v2.1.0
+              v2.1.1
             </span>
 
             <div className="lang-switcher" role="group" aria-label="Language Switcher">
@@ -123,8 +137,9 @@ export function App() {
             id="nav-tab-pillars"
             className={`mode-nav-btn ${activeTab === 'pillars' ? 'active' : ''}`}
             onClick={() => setActiveTab('pillars')}
+            title={t.nav.t1Sub}
           >
-            <Layers size={17} />
+            <Layers size={16} />
             <div>
               <strong>{t.nav.t1Title}</strong>
               <span>{t.nav.t1Sub}</span>
@@ -135,8 +150,9 @@ export function App() {
             id="nav-tab-simulators"
             className={`mode-nav-btn ${activeTab === 'simulators' ? 'active' : ''}`}
             onClick={() => setActiveTab('simulators')}
+            title={t.nav.t2Sub}
           >
-            <Sliders size={17} />
+            <Sliders size={16} />
             <div>
               <strong>{t.nav.t2Title}</strong>
               <span>{t.nav.t2Sub}</span>
@@ -147,8 +163,9 @@ export function App() {
             id="nav-tab-capstone"
             className={`mode-nav-btn ${activeTab === 'capstone' ? 'active' : ''}`}
             onClick={() => setActiveTab('capstone')}
+            title={t.nav.t3Sub}
           >
-            <Award size={17} />
+            <Award size={16} />
             <div>
               <strong>{t.nav.t3Title}</strong>
               <span>{t.nav.t3Sub}</span>
@@ -159,8 +176,9 @@ export function App() {
             id="nav-tab-adr"
             className={`mode-nav-btn ${activeTab === 'adr-boardroom' ? 'active' : ''}`}
             onClick={() => setActiveTab('adr-boardroom')}
+            title={t.nav.t4Sub}
           >
-            <FileCheck2 size={17} />
+            <FileCheck2 size={16} />
             <div>
               <strong>{t.nav.t4Title}</strong>
               <span>{t.nav.t4Sub}</span>
@@ -171,8 +189,9 @@ export function App() {
             id="nav-tab-cpmai"
             className={`mode-nav-btn cpmai-tab-highlight ${activeTab === 'cpmai-lifecycle' ? 'active' : ''}`}
             onClick={() => setActiveTab('cpmai-lifecycle')}
+            title={t.nav.t5Sub}
           >
-            <GitBranch size={17} />
+            <GitBranch size={16} />
             <div>
               <strong>{t.nav.t5Title}</strong>
               <span>{t.nav.t5Sub}</span>
@@ -185,6 +204,7 @@ export function App() {
       <main className="workbench-main">
         {activeTab === 'pillars' && (
           <PillarMasteryExplorer
+            key={homeResetKey}
             lang={lang}
             masteredTopicIds={masteredTopicIds}
             onToggleMastered={handleToggleMastered}

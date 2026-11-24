@@ -100,6 +100,7 @@ export const PillarMasteryExplorer: React.FC<Props> = ({
         {pillars.map((pillar) => {
           const topicsInPillar = topics.filter((t) => t.pillarId === pillar.id);
           const doneCount = topicsInPillar.filter((t) => masteredTopicIds.includes(t.id)).length;
+          const progressPct = topicsInPillar.length > 0 ? Math.round((doneCount / topicsInPillar.length) * 100) : 0;
           const isActive = pillar.id === selectedPillarId;
 
           return (
@@ -108,15 +109,19 @@ export const PillarMasteryExplorer: React.FC<Props> = ({
               id={`pillar-btn-${pillar.number}`}
               className={`pillar-card-btn ${isActive ? 'active' : ''}`}
               onClick={() => handleSelectPillar(pillar.id)}
+              title={pillar.subtitle}
             >
               <div className="pillar-card-top">
                 <span className="pillar-num-badge">{copy.pillarWord} {pillar.number}</span>
-                <span className="pillar-progress-pill">
-                  {doneCount}/{topicsInPillar.length} {copy.masteredWord}
+                <span className={`pillar-progress-pill ${doneCount === topicsInPillar.length && doneCount > 0 ? 'complete' : ''}`}>
+                  {doneCount}/{topicsInPillar.length}
                 </span>
               </div>
               <strong className="pillar-card-title">{pillar.title}</strong>
               <p className="pillar-card-sub">{pillar.subtitle}</p>
+              <div className="pillar-mini-progress" aria-hidden="true">
+                <div className="pillar-mini-progress-fill" style={{ width: `${progressPct}%` }} />
+              </div>
               <span className="mobile-card-chevron" aria-hidden="true">
                 {isVi ? 'Mở bài học' : 'Open modules'} <ChevronRight size={15} />
               </span>

@@ -3856,6 +3856,248 @@ body,
   border-color: #2563eb;
 }
 
+/* ============================================================================
+   v2.1.1: Clickable Home Logo + Lightweight Segmented Nav & Smart Pillar Cards
+   ============================================================================ */
+.brand-home-btn {
+  background: transparent;
+  border: none;
+  padding: 0.28rem 0.65rem 0.28rem 0.28rem;
+  margin: -0.28rem 0 -0.28rem -0.28rem;
+  border-radius: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.16s ease, transform 0.16s ease;
+}
+
+.brand-home-btn:hover {
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.brand-home-btn:hover .brand-mark-logo {
+  transform: scale(1.04);
+}
+
+.brand-home-btn .brand-mark-logo {
+  transition: transform 0.18s ease;
+}
+
+/* Sleek Segmented Pill Navigation (Desktop) */
+.primary-mode-nav.five-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+  max-width: calc(1480px - 3rem);
+  margin: 0.1rem auto 0.65rem;
+  padding: 4px;
+  background: #f2ede4;
+  border: 1px solid #e6dfd3;
+  border-radius: 14px;
+}
+
+.primary-mode-nav.five-tabs .mode-nav-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 0.54rem 0.72rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.48rem;
+  color: #57534e;
+  box-shadow: none;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.primary-mode-nav.five-tabs .mode-nav-btn > div {
+  min-width: 0;
+}
+
+.primary-mode-nav.five-tabs .mode-nav-btn strong {
+  display: block;
+  font-size: 0.81rem;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.primary-mode-nav.five-tabs .mode-nav-btn span {
+  display: none;
+}
+
+.primary-mode-nav.five-tabs .mode-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.65);
+  color: #1c1917;
+}
+
+.primary-mode-nav.five-tabs .mode-nav-btn.active {
+  background: #ffffff;
+  color: #2563eb;
+  border-color: rgba(37, 99, 235, 0.22);
+  box-shadow: 0 2px 8px rgba(28, 25, 23, 0.06);
+}
+
+.primary-mode-nav.five-tabs .mode-nav-btn.cpmai-tab-highlight:not(.active) {
+  background: rgba(254, 243, 199, 0.55);
+  border-color: rgba(217, 119, 6, 0.24);
+  color: #b45309;
+}
+
+.primary-mode-nav.five-tabs .mode-nav-btn.cpmai-tab-highlight:not(.active):hover {
+  background: #fef3c7;
+}
+
+/* Lightweight Smart 5-Pillar Cards */
+.pillars-strip {
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+}
+
+.pillar-card-btn {
+  background: #ffffff;
+  border: 1px solid #e7e1d6;
+  border-radius: 14px;
+  padding: 0.82rem 0.92rem 0.75rem;
+  gap: 0.38rem;
+  box-shadow: 0 1px 3px rgba(28, 25, 23, 0.03);
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+
+.pillar-card-btn:hover {
+  background: #ffffff;
+  border-color: rgba(37, 99, 235, 0.38);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+  transform: translateY(-2px);
+}
+
+.pillar-card-btn.active {
+  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
+  border-color: #2563eb;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.12);
+}
+
+.pillar-num-badge {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 0.14rem 0.5rem;
+  border-radius: 999px;
+  background: #f3efe7;
+  color: #57534e;
+}
+
+.pillar-card-btn.active .pillar-num-badge {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.pillar-progress-pill {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #57534e;
+  background: #f5f2eb;
+  padding: 0.14rem 0.48rem;
+  border-radius: 999px;
+}
+
+.pillar-progress-pill.complete {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.pillar-card-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.32;
+  color: #1c1917;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pillar-card-sub {
+  font-size: 0.73rem;
+  color: #78716c;
+  line-height: 1.38;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pillar-mini-progress {
+  width: 100%;
+  height: 3px;
+  background: #f1ece2;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: auto;
+}
+
+.pillar-mini-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #10b981);
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+/* Tablet & Mobile Responsive Refinements */
+@media (max-width: 1120px) {
+  .primary-mode-nav.five-tabs {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0.1rem 1rem 0.65rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .primary-mode-nav.five-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .primary-mode-nav.five-tabs .mode-nav-btn {
+    flex: 0 0 auto;
+    width: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .primary-mode-nav.five-tabs {
+    margin: 0 0.85rem 0.6rem;
+    padding: 4px;
+    gap: 0.3rem;
+    border-radius: 12px;
+  }
+
+  .primary-mode-nav.five-tabs .mode-nav-btn {
+    min-width: auto;
+    padding: 0.48rem 0.78rem;
+  }
+
+  .primary-mode-nav.five-tabs .mode-nav-btn strong {
+    font-size: 0.78rem;
+  }
+
+  .explorer-wrapper.mobile-layer-pillars .pillars-strip {
+    gap: 0.55rem;
+  }
+
+  .explorer-wrapper.mobile-layer-pillars .pillar-card-btn {
+    padding: 0.85rem 0.95rem;
+    border-radius: 14px;
+  }
+}
+
 
 
 
