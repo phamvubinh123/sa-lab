@@ -4226,6 +4226,33 @@ body,
   }
 }
 
+/* Drag-to-scroll polish on desktop/tablet nav */
+@media (max-width: 1240px) {
+  .primary-mode-nav.five-tabs {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0.1rem 1rem 0.65rem;
+    -webkit-overflow-scrolling: touch;
+    cursor: grab;
+    user-select: none;
+  }
+
+  .primary-mode-nav.five-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .primary-mode-nav.five-tabs .mode-nav-btn {
+    flex: 0 0 auto;
+    width: auto;
+  }
+
+  .primary-mode-nav.five-tabs.is-dragging,
+  .primary-mode-nav.five-tabs.is-dragging .mode-nav-btn {
+    cursor: grabbing;
+  }
+}
+
 
 
 

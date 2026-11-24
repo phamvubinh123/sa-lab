@@ -57,7 +57,14 @@ export function App() {
   }, [lang]);
 
   const [homeResetKey, setHomeResetKey] = useState(0);
+  const [isNavDragging, setIsNavDragging] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
+  const dragState = useRef<{ isDown: boolean; startX: number; scrollLeft: number; hasDragged: boolean }>({
+    isDown: false,
+    startX: 0,
+    scrollLeft: 0,
+    hasDragged: false
+  });
 
   const handleToggleMastered = (topicId: string) => {
     setMasteredTopicIds((prev) =>
@@ -70,6 +77,53 @@ export function App() {
     setHomeResetKey((prev) => prev + 1);
     navRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavMouseDown = (e: React.MouseEvent<HTMLElement>) => {
+    const el = navRef.current;
+    if (!el || el.scrollWidth <= el.clientWidth) return;
+    dragState.current = {
+      isDown: true,
+      startX: e.pageX - el.offsetLeft,
+      scrollLeft: el.scrollLeft,
+      hasDragged: false
+    };
+    setIsNavDragging(true);
+  };
+
+  const handleNavMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    if (!dragState.current.isDown || !navRef.current) return;
+    const x = e.pageX - navRef.current.offsetLeft;
+    const walk = x - dragState.current.startX;
+    if (Math.abs(walk) > 5) {
+      dragState.current.hasDragged = true;
+    }
+    if (dragState.current.hasDragged) {
+      e.preventDefault();
+      navRef.current.scrollLeft = dragState.current.scrollLeft - walk;
+    }
+  };
+
+  const stopNavDrag = () => {
+    if (!dragState.current.isDown) return;
+    dragState.current.isDown = false;
+    setIsNavDragging(false);
+  };
+
+  const handleNavClickCapture = (e: React.MouseEvent<HTMLElement>) => {
+    if (dragState.current.hasDragged) {
+      e.preventDefault();
+      e.stopPropagation();
+      dragState.current.hasDragged = false;
+    }
+  };
+
+  const handleNavWheel = (e: React.WheelEvent<HTMLElement>) => {
+    const el = navRef.current;
+    if (!el || el.scrollWidth <= el.clientWidth) return;
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      el.scrollLeft += e.deltaY;
+    }
   };
 
   const t = UI_COPY[lang];
@@ -98,7 +152,7 @@ export function App() {
 
           <div className="header-right-cluster">
             <span className="app-version-pill" title="SA-Lab Current Release">
-              v2.1.4
+              v2.1.5
             </span>
 
             <div className="lang-switcher" role="group" aria-label="Language Switcher">
@@ -124,7 +178,17 @@ export function App() {
         </div>
 
         {/* Primary Mode Navigation Bar (5 Tabs) */}
-        <nav ref={navRef} className="primary-mode-nav five-tabs" aria-label="Main Workbench Modes">
+        <nav
+          ref={navRef}
+          className={`primary-mode-nav five-tabs ${isNavDragging ? 'is-dragging' : ''}`}
+          aria-label="Main Workbench Modes"
+          onMouseDown={handleNavMouseDown}
+          onMouseMove={handleNavMouseMove}
+          onMouseUp={stopNavDrag}
+          onMouseLeave={stopNavDrag}
+          onClickCapture={handleNavClickCapture}
+          onWheel={handleNavWheel}
+        >
           <button
             id="nav-tab-pillars"
             className={`mode-nav-btn ${activeTab === 'pillars' ? 'active' : ''}`}
