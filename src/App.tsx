@@ -72,7 +72,7 @@ export function App() {
         <div className="header-inner">
           <div className="brand-cluster">
             <div className="brand-mark brand-mark-logo">
-              <img src="./sa-lab-logo.svg" alt="SA-Lab Logo" width={40} height={40} />
+              <img src="./sa-lab-logo.png" alt="SA-Lab Logo" width={42} height={42} />
             </div>
             <div className="brand-title-row">
               <h1>{t.headerTitle}</h1>
@@ -92,7 +92,7 @@ export function App() {
             </button>
 
             <span className="app-version-pill" title="SA-Lab Current Release">
-              v2.0.0
+              v2.1.0
             </span>
 
             <div className="lang-switcher" role="group" aria-label="Language Switcher">

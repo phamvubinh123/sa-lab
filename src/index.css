@@ -1,30 +1,31 @@
 :root {
-  --bg-canvas: hsl(210, 25%, 97%);
-  --bg-surface: hsl(0, 0%, 100%);
-  --bg-elevated: hsl(210, 22%, 95%);
-  --bg-subtle: hsl(210, 20%, 91%);
-  --border-subtle: hsl(214, 18%, 85%);
-  --border-strong: hsl(214, 18%, 74%);
+  /* Template 2: Warm Paper & Cobalt — Clean, Youthful, Editorial */
+  --bg-canvas: #faf8f5;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f4f0e8;
+  --bg-subtle: #ebe5da;
+  --border-subtle: #e7e1d6;
+  --border-strong: #d6cec0;
 
-  --text-primary: hsl(220, 28%, 14%);
-  --text-secondary: hsl(218, 16%, 34%);
-  --text-muted: hsl(218, 12%, 48%);
+  --text-primary: #1c1917;
+  --text-secondary: #57534e;
+  --text-muted: #78716c;
 
-  --accent-teal: hsl(174, 78%, 31%);
-  --accent-teal-soft: hsla(174, 78%, 31%, 0.10);
-  --accent-sky: hsl(201, 86%, 40%);
-  --accent-amber: hsl(35, 92%, 40%);
-  --accent-amber-soft: hsla(35, 92%, 45%, 0.12);
-  --accent-emerald: hsl(156, 72%, 32%);
-  --accent-emerald-soft: hsla(156, 72%, 38%, 0.11);
-  --accent-crimson: hsl(350, 78%, 48%);
-  --accent-crimson-soft: hsla(350, 78%, 50%, 0.10);
+  --accent-teal: #2563eb;
+  --accent-teal-soft: #eff6ff;
+  --accent-sky: #0284c7;
+  --accent-amber: #d97706;
+  --accent-amber-soft: #fef3c7;
+  --accent-emerald: #16a34a;
+  --accent-emerald-soft: #dcfce7;
+  --accent-crimson: #dc2626;
+  --accent-crimson-soft: #fee2e2;
 
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 12px;
+  --font-sans: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
 }
 
 * {
@@ -37,7 +38,8 @@ body {
   background-color: var(--bg-canvas);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  line-height: 1.55;
+  line-height: 1.6;
+  letter-spacing: -0.005em;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -3746,6 +3748,114 @@ body,
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* === TEMPLATE 2 POLISH: WARM PAPER & COBALT === */
+.top-workbench-header {
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 12px rgba(28, 25, 23, 0.04);
+}
+
+.topic-header-card,
+.detail-section-card,
+.sim-panel,
+.capstone-stage-card,
+.gatekeeper-section,
+.tco-studio-panel,
+.cpmai-hero-card,
+.cpmai-workspace-card,
+.topic-sidebar {
+  box-shadow: 0 3px 14px rgba(28, 25, 23, 0.035);
+}
+
+.mode-nav-btn {
+  border-radius: 12px;
+}
+
+.mode-nav-btn.active {
+  background: #eff6ff;
+  border-color: #2563eb;
+  color: #1d4ed8;
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.12);
+}
+
+.mode-nav-btn.cpmai-tab-highlight:not(.active) {
+  border-color: rgba(217, 119, 6, 0.35);
+  background: #fffbeb;
+}
+
+.plain-guide-card {
+  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
+  border-color: rgba(37, 99, 235, 0.22);
+}
+
+.analogy-callout-box {
+  background: #fffbeb;
+  border-color: rgba(217, 119, 6, 0.28);
+  border-left-color: #d97706;
+}
+
+.analogy-tag {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.visual-flow-canvas {
+  background: linear-gradient(135deg, #f8f5ef 0%, #f1ece2 100%);
+  border-color: #e2dacb;
+}
+
+.glossary-term {
+  border-bottom-color: #2563eb;
+}
+
+.glossary-term:hover {
+  background-color: rgba(37, 99, 235, 0.1);
+  color: #1d4ed8;
+}
+
+.tutor-header {
+  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
+}
+
+.tutor-header-btn {
+  border-color: rgba(37, 99, 235, 0.35);
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.tutor-chip-btn {
+  border-color: rgba(37, 99, 235, 0.28);
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.tutor-messages-list {
+  background: #faf8f5;
+}
+
+.app-version-pill {
+  color: #2563eb;
+  background: #eff6ff;
+  border-color: rgba(37, 99, 235, 0.25);
+}
+
+.brand-mark.brand-mark-logo {
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+  border-radius: 12px;
+}
+
+.cpmai-phase-btn.active {
+  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
+  border-color: #2563eb;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.14);
+}
+
+.cpmai-pattern-card.selected {
+  background: #eff6ff;
+  border-color: #2563eb;
+}
+
 
 
 
