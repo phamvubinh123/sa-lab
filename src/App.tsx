@@ -96,7 +96,7 @@ export function App() {
 
           <div className="header-right-cluster">
             <span className="app-version-pill" title="SA-Lab Current Release">
-              v2.1.2
+              v2.1.3
             </span>
 
             <div className="lang-switcher" role="group" aria-label="Language Switcher">
