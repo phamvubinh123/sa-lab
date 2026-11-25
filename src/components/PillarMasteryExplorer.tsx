@@ -21,11 +21,14 @@ import {
   Scale,
   Shield,
   Terminal,
+  Video,
   Wrench
 } from 'lucide-react';
 import { TopicFlowDiagram } from './ArchitectureFlowDiagram';
 import { GlossaryText } from './GlossaryText';
 import { TopicPracticeLab } from './TopicPracticeLab';
+import { YouTubeEmbedCard } from './YouTubeEmbedCard';
+import { TOPIC_VIDEOS } from '../data/videoResources';
 
 interface Props {
   lang: Lang;
@@ -312,8 +315,8 @@ export const PillarMasteryExplorer: React.FC<Props> = ({
                 <div className="key-terms-strip">
                   <span className="key-terms-label">
                     {isVi
-                      ? 'Thuật ngữ bài này (rê chuột để xem nghĩa):'
-                      : 'Key terms in this module (hover to explain):'}
+                      ? 'Thuật ngữ bài này (rê chuột xem nhanh · nhấn để xem Video):'
+                      : 'Key terms in this module (hover to preview · click for Video):'}
                   </span>
                   <div className="key-terms-pills">
                     {currentGuide.keyTerms.map((term) => (
@@ -347,6 +350,34 @@ export const PillarMasteryExplorer: React.FC<Props> = ({
                 </div>
                 <TopicFlowDiagram topicId={currentTopic.id} />
               </div>
+
+              {/* Deep-Dive YouTube Video Explanations */}
+              {(TOPIC_VIDEOS[currentTopic.id]?.length ?? 0) > 0 && (
+                <div className="detail-section-card yt-section-card">
+                  <div className="card-heading">
+                    <Video size={18} />
+                    <h3>
+                      {isVi
+                        ? 'Video Giải thích Chuyên sâu (YouTube Đề xuất)'
+                        : 'Deep-Dive Video Explanations (Curated YouTube)'}
+                    </h3>
+                  </div>
+                  <p className="yt-section-subtitle">
+                    {isVi
+                      ? 'Các video giải thích trực quan từ những kênh kỹ thuật uy tín (ByteByteGo, IBM Technology, AI Engineer...) giúp hiểu bản chất bên dưới ngoài định nghĩa.'
+                      : 'Curated visual walkthroughs from top engineering channels (ByteByteGo, IBM Technology, AI Engineer...) to build deep intuition beyond definitions.'}
+                  </p>
+                  <div className="yt-videos-grid">
+                    {TOPIC_VIDEOS[currentTopic.id].map((video) => (
+                      <YouTubeEmbedCard
+                        key={`${currentTopic.id}-${video.youtubeId}`}
+                        video={video}
+                        lang={lang}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Next-Step CTA Bar */}
               <div className="step-footer-nav">

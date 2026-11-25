@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { ExternalLink, PlayCircle, Search, X } from 'lucide-react';
 import { GLOSSARY_MAP, SA_GLOSSARY, type GlossaryEntry } from '../data/glossary';
+import { getYouTubeSearchUrl, TERM_VIDEO_MAP } from '../data/videoResources';
+import type { Lang } from '../data/i18n';
+import { YouTubeEmbedCard } from './YouTubeEmbedCard';
 
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -62,20 +66,22 @@ interface TooltipState {
   y: number;
 }
 
-export const GlossaryTooltip: React.FC = () => {
+export const GlossaryTooltip: React.FC<{ lang?: Lang }> = ({ lang = 'vi' }) => {
+  const isVi = lang === 'vi';
   const [tip, setTip] = useState<TooltipState>({
     visible: false,
     entry: null,
     x: 0,
     y: 0
   });
+  const [modalEntry, setModalEntry] = useState<GlossaryEntry | null>(null);
 
   useEffect(() => {
     let currentEl: HTMLElement | null = null;
 
     const computePos = (clientX: number, clientY: number) => {
       const maxWidth = 360;
-      const estHeight = 145;
+      const estHeight = 165;
       const offset = 14;
 
       let x = clientX + offset;
@@ -145,16 +151,23 @@ export const GlossaryTooltip: React.FC = () => {
       const entry = key ? GLOSSARY_MAP[key] : undefined;
       if (!entry) return;
 
-      const rect = target.getBoundingClientRect();
-      currentEl = target;
-      const { x, y } = computePos(rect.left, rect.bottom);
-      setTip({ visible: true, entry, x, y });
+      e.stopPropagation();
+      currentEl = null;
+      setTip((prev) => ({ ...prev, visible: false }));
+      setModalEntry(entry);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setModalEntry(null);
+      }
     };
 
     document.addEventListener('mouseover', handleMouseOver);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseout', handleMouseOut);
     document.addEventListener('click', handleClick);
+    document.addEventListener('keydown', handleKeyDown);
     window.addEventListener('scroll', handleScroll, true);
 
     return () => {
@@ -162,23 +175,97 @@ export const GlossaryTooltip: React.FC = () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseout', handleMouseOut);
       document.removeEventListener('click', handleClick);
+      document.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('scroll', handleScroll, true);
     };
   }, []);
 
-  if (!tip.visible || !tip.entry) return null;
+  const mappedVideo = modalEntry ? TERM_VIDEO_MAP[modalEntry.term.toLowerCase()] : undefined;
 
   return (
-    <div
-      className="glossary-tooltip"
-      role="tooltip"
-      style={{ left: `${tip.x}px`, top: `${tip.y}px` }}
-    >
-      <div className="glossary-tip-header">
-        <span className="glossary-tip-term">{tip.entry.term}</span>
-        <span className="glossary-tip-full">{tip.entry.fullName}</span>
-      </div>
-      <p className="glossary-tip-body">{tip.entry.explanation}</p>
-    </div>
+    <>
+      {tip.visible && tip.entry && !modalEntry && (
+        <div
+          className="glossary-tooltip"
+          role="tooltip"
+          style={{ left: `${tip.x}px`, top: `${tip.y}px` }}
+        >
+          <div className="glossary-tip-header">
+            <span className="glossary-tip-term">{tip.entry.term}</span>
+            <span className="glossary-tip-full">{tip.entry.fullName}</span>
+          </div>
+          <p className="glossary-tip-body">{tip.entry.explanation}</p>
+          <div className="glossary-tip-footer">
+            <PlayCircle size={12} />
+            <span>
+              {isVi
+                ? 'Nhấn vào thuật ngữ để xem Video giải thích sâu'
+                : 'Click term for Deep-Dive & YouTube Video'}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {modalEntry && (
+        <div
+          className="glossary-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-label={modalEntry.term}
+          onClick={() => setModalEntry(null)}
+        >
+          <div
+            className="glossary-modal-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="glossary-modal-header">
+              <div>
+                <span className="glossary-modal-badge">{modalEntry.term}</span>
+                <h3>{modalEntry.fullName}</h3>
+              </div>
+              <button
+                type="button"
+                className="glossary-modal-close"
+                onClick={() => setModalEntry(null)}
+                aria-label={isVi ? 'Đóng' : 'Close'}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <p className="glossary-modal-desc">{modalEntry.explanation}</p>
+
+            {mappedVideo ? (
+              <div className="glossary-modal-video-wrap">
+                <div className="glossary-modal-section-label">
+                  <PlayCircle size={14} />
+                  <span>
+                    {isVi ? 'Video giải thích chi tiết (Đề xuất)' : 'Curated Deep-Dive Video'}
+                  </span>
+                </div>
+                <YouTubeEmbedCard video={mappedVideo} lang={lang} compact />
+              </div>
+            ) : null}
+
+            <div className="glossary-modal-actions">
+              <a
+                href={getYouTubeSearchUrl(`${modalEntry.term} ${modalEntry.fullName}`)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-secondary glossary-yt-search-btn"
+              >
+                <Search size={14} />
+                <span>
+                  {isVi
+                    ? `Tìm thêm video "${modalEntry.term}" trên YouTube`
+                    : `Search "${modalEntry.term}" videos on YouTube`}
+                </span>
+                <ExternalLink size={12} />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };

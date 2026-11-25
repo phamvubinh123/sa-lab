@@ -130,7 +130,7 @@ export function App() {
 
   return (
     <div className={`app-shell ${isTutorOpen ? 'tutor-open' : ''}`}>
-      <GlossaryTooltip />
+      <GlossaryTooltip lang={lang} />
       {/* Top Enterprise Workbench Header */}
       <header className="top-workbench-header">
         <div className="header-inner">
